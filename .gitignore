@@ -127,3 +127,7 @@ Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.d
 Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
 Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.su
 Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/subdir.mk
+Debug/KEYPAD.bin
+Debug/KEYPAD.elf
+Debug/KEYPAD.list
+Debug/KEYPAD.map
