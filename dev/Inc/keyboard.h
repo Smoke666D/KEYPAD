@@ -32,14 +32,17 @@
 #define DefaultRepeatRate  400U
 #define BRAKECODE          0x40U
 #define MAKECODE           0x80U
-#define LINE               4U
-#define ROW                5U
-#define up_key             0x01U
-#define down_key           0x02U
-#define stop_key           0x04U
-#define start_key          0x08U
-#define auto_key           0x10U
-#define time_out           0x20U
+
+
+#define kl1_key            0x01U
+#define kl2_key            0x02U
+#define kl3_key            0x04U
+#define kl4_key            0x08U
+#define kl5_key            0x10U
+#define kl6_key            0x20U
+#define kl7_key            0x40U
+#define kl8_key            0x80U
+#define time_out           0xFFU
 
 #define USE_KEY_TIME_OUT       0
 

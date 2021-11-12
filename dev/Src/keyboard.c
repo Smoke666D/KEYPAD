@@ -24,8 +24,10 @@ static EventGroupHandle_t pxKeyStatusFLag;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
-static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
-static unsigned long KeyNorPressTimeOut                         = 0U;
+static unsigned char CODES[KEYBOARD_COUNT]                      = { kl1_key, kl2_key, kl3_key, kl4_key ,kl5_key, kl6_key,kl7_key, kl8_key };
+#if (USE_KEY_TIME_OUT == 1)
+	static unsigned long KeyNorPressTimeOut                         = 0U;
+#endif
 
 uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
@@ -89,7 +91,9 @@ void vKeyboardTask( void * argument )
         TEvent.Status  = BRAKECODE;
         xQueueReset( pKeyboardQueue );
         xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-        KeyNorPressTimeOut = 0U;
+		#if (USE_KEY_TIME_OUT == 1)
+        	KeyNorPressTimeOut = 0U;
+		#endif
       }
       else
       {
@@ -106,7 +110,9 @@ void vKeyboardTask( void * argument )
             TEvent.KeyCode = CODES[i];
             TEvent.Status  = MAKECODE;
             xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-            KeyNorPressTimeOut = 0U;
+			#if (USE_KEY_TIME_OUT == 1)
+            	KeyNorPressTimeOut = 0U;
+			#endif
           }
         }
         else if ( STATUS[i] && ( TK[i] == KEY_ON_STATE ) )
@@ -122,7 +128,9 @@ void vKeyboardTask( void * argument )
                 TEvent.KeyCode = CODES[i];
                 TEvent.Status  = MAKECODE;
                 xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );             //?????????? MAKE CODR
-                KeyNorPressTimeOut = 0U;
+				#if (USE_KEY_TIME_OUT == 1)
+                	KeyNorPressTimeOut = 0U;
+				#endif
               }
               break;
             case KEY_ON_REPEAT:
@@ -132,7 +140,9 @@ void vKeyboardTask( void * argument )
                 TEvent.KeyCode = CODES[i];
                 TEvent.Status  = MAKECODE;
                 xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-                KeyNorPressTimeOut = 0U;
+                #if (USE_KEY_TIME_OUT == 1)
+                	KeyNorPressTimeOut = 0U;
+				#endif
               }
               break;
             default:

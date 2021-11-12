@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "keyboard.h"
+#include "process.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,6 +68,13 @@ const osThreadAttr_t KeyboardTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for ProcessTask */
+osThreadId_t ProcessTaskHandle;
+const osThreadAttr_t ProcessTask_attributes = {
+  .name = "ProcessTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -81,6 +90,7 @@ static void MX_DMA_Init(void);
 static void MX_USB_PCD_Init(void);
 void StartDefaultTask(void *argument);
 void vKeyboardTask(void *argument);
+void vProcessTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -126,7 +136,8 @@ int main(void)
   MX_DMA_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  vSetupKeyboard();
+  vProceesInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -154,6 +165,9 @@ int main(void)
 
   /* creation of KeyboardTask */
   KeyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &KeyboardTask_attributes);
+
+  /* creation of ProcessTask */
+  ProcessTaskHandle = osThreadNew(vProcessTask, NULL, &ProcessTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -539,6 +553,24 @@ __weak void vKeyboardTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END vKeyboardTask */
+}
+
+/* USER CODE BEGIN Header_vProcessTask */
+/**
+* @brief Function implementing the ProcessTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vProcessTask */
+__weak void vProcessTask(void *argument)
+{
+  /* USER CODE BEGIN vProcessTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vProcessTask */
 }
 
 /**
