@@ -12,7 +12,15 @@
 #include "keyboard.h"
 
 
-#define REGISTER_COUNT  10
+#define NMT_CONTROL                     (CO_NMT_STARTUP_TO_OPERATIONAL | CO_NMT_ERR_ON_ERR_REG | CO_ERR_REG_GENERIC_ERR | CO_ERR_REG_COMMUNICATION)
+#define FIRST_HB_TIME                   500
+#define SDO_SRV_TIMEOUT_TIME            1000
+#define SDO_CLI_TIMEOUT_TIME            500
+#define SDO_CLI_BLOCK                   false
+#define OD_STATUS_BITS                  NULL
+
+
+
 
 #define KEY_STATE_REGISTER  1U
 #define K1   0x01
@@ -26,7 +34,9 @@
 
 #define keys_state_message 180U
 
+void vCanOpenInit(void *argument);
 void vProcessTask( void * argument );
 void vProceesInit( void );
+void vCanOpen_Init(void *argument);
 
 #endif /* INC_PROCESS_H_ */

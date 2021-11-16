@@ -75,6 +75,13 @@ const osThreadAttr_t ProcessTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for CanOpen_Init */
+osThreadId_t CanOpen_InitHandle;
+const osThreadAttr_t CanOpen_Init_attributes = {
+  .name = "CanOpen_Init",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -91,6 +98,7 @@ static void MX_USB_PCD_Init(void);
 void StartDefaultTask(void *argument);
 void vKeyboardTask(void *argument);
 void vProcessTask(void *argument);
+void vCanOpen_Init(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -138,6 +146,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   vSetupKeyboard();
   vProceesInit();
+  vCanOpenInit(&hcan);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -168,6 +177,9 @@ int main(void)
 
   /* creation of ProcessTask */
   ProcessTaskHandle = osThreadNew(vProcessTask, NULL, &ProcessTask_attributes);
+
+  /* creation of CanOpen_Init */
+  CanOpen_InitHandle = osThreadNew(vCanOpen_Init, NULL, &CanOpen_Init_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -571,6 +583,24 @@ __weak void vProcessTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END vProcessTask */
+}
+
+/* USER CODE BEGIN Header_vCanOpen_Init */
+/**
+* @brief Function implementing the CanOpen_Init thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vCanOpen_Init */
+__weak void vCanOpen_Init(void *argument)
+{
+  /* USER CODE BEGIN vCanOpen_Init */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vCanOpen_Init */
 }
 
 /**
