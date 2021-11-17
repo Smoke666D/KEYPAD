@@ -22,11 +22,6 @@ static uint32_t co_heap_used;
 static CO_NMT_reset_cmd_t reset = CO_RESET_NOT;
 
 
-void vCanOpenInit(void *argument)
-{
-
-
-}
 
 
 void vCanOpen_Init(void *argument)

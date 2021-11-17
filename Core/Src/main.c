@@ -75,10 +75,10 @@ const osThreadAttr_t ProcessTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
-/* Definitions for CanOpen_Init */
-osThreadId_t CanOpen_InitHandle;
-const osThreadAttr_t CanOpen_Init_attributes = {
-  .name = "CanOpen_Init",
+/* Definitions for CanOpenPeriodic */
+osThreadId_t CanOpenPeriodicHandle;
+const osThreadAttr_t CanOpenPeriodic_attributes = {
+  .name = "CanOpenPeriodic",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -98,7 +98,7 @@ static void MX_USB_PCD_Init(void);
 void StartDefaultTask(void *argument);
 void vKeyboardTask(void *argument);
 void vProcessTask(void *argument);
-void vCanOpen_Init(void *argument);
+void vCanOpenPeriodicProcess(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -146,6 +146,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   vSetupKeyboard();
   vProceesInit();
+
   vCanOpenInit(&hcan);
   /* USER CODE END 2 */
 
@@ -178,8 +179,8 @@ int main(void)
   /* creation of ProcessTask */
   ProcessTaskHandle = osThreadNew(vProcessTask, NULL, &ProcessTask_attributes);
 
-  /* creation of CanOpen_Init */
-  CanOpen_InitHandle = osThreadNew(vCanOpen_Init, NULL, &CanOpen_Init_attributes);
+  /* creation of CanOpenPeriodic */
+  CanOpenPeriodicHandle = osThreadNew(vCanOpenPeriodicProcess, NULL, &CanOpenPeriodic_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -585,22 +586,43 @@ __weak void vProcessTask(void *argument)
   /* USER CODE END vProcessTask */
 }
 
-/* USER CODE BEGIN Header_vCanOpen_Init */
+/* USER CODE BEGIN Header_vCanOpenPeriodicProcess */
 /**
-* @brief Function implementing the CanOpen_Init thread.
+* @brief Function implementing the CanOpenPeriodic thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_vCanOpen_Init */
-__weak void vCanOpen_Init(void *argument)
+/* USER CODE END Header_vCanOpenPeriodicProcess */
+__weak void vCanOpenPeriodicProcess(void *argument)
 {
-  /* USER CODE BEGIN vCanOpen_Init */
+  /* USER CODE BEGIN vCanOpenPeriodicProcess */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END vCanOpen_Init */
+  /* USER CODE END vCanOpenPeriodicProcess */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
 }
 
 /**

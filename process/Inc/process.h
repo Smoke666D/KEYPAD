@@ -34,7 +34,6 @@
 
 #define keys_state_message 180U
 
-void vCanOpenInit(void *argument);
 void vProcessTask( void * argument );
 void vProceesInit( void );
 void vCanOpen_Init(void *argument);

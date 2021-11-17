@@ -27,7 +27,65 @@
 
 
 #include "301/CO_driver.h"
-#include "main.h"
+#include "CO_driver_ST32F103.h"
+
+
+/* Mutex for atomic access */
+static osMutexId_t co_mutex;
+
+/* Semaphore for main app thread synchronization */
+osSemaphoreId_t co_drv_app_thread_sync_semaphore;
+
+/* Semaphore for periodic thread synchronization */
+osSemaphoreId_t co_drv_periodic_thread_sync_semaphore;
+
+
+uint8_t co_drv_create_os_objects(void) {
+    /* Create new mutex for OS context */
+    if (co_mutex == NULL) {
+        const osMutexAttr_t attr = {
+            .attr_bits = osMutexRecursive,
+            .name = "co"
+        };
+        co_mutex = osMutexNew(&attr);
+    }
+
+    /* Semaphore for main app thread synchronization */
+    if (co_drv_app_thread_sync_semaphore == NULL) {
+        const osSemaphoreAttr_t attr = {
+                .name = "co_app_thread_sync"
+        };
+        co_drv_app_thread_sync_semaphore = osSemaphoreNew(1, 1, &attr);
+    }
+
+    /* Semaphore for periodic thread synchronization */
+    if (co_drv_periodic_thread_sync_semaphore == NULL) {
+        const osSemaphoreAttr_t attr = {
+                .name = "co_periodic_thread_sync"
+        };
+        co_drv_periodic_thread_sync_semaphore = osSemaphoreNew(1, 1, &attr);
+    }
+
+    return 1;
+}
+
+/**
+ * \brief           Lock mutex or wait to be available
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t
+co_drv_mutex_lock(void) {
+    return osMutexAcquire(co_mutex, osWaitForever) == osOK;
+}
+
+/**
+ * \brief           Release previously locked mutex
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t
+co_drv_mutex_unlock(void) {
+    return osMutexRelease(co_mutex) == osOK;
+}
 
 /******************************************************************************/
 void CO_CANsetConfigurationMode(void *CANptr){
@@ -58,6 +116,8 @@ CO_ReturnError_t CO_CANmodule_init(
         uint16_t                CANbitRate)
 {
     uint16_t i;
+    CAN_HandleTypeDef * hcan = CANptr;
+    CAN_FilterTypeDef  sFilterConfig;
 
     /* verify arguments */
     if(CANmodule==NULL || rxArray==NULL || txArray==NULL){
@@ -91,25 +151,62 @@ CO_ReturnError_t CO_CANmodule_init(
 
     /* Configure CAN module registers */
 
+    /* Configure CAN module registers */
+    hcan->Init.Mode = CAN_MODE_NORMAL;
+    hcan->Init.TimeTriggeredMode = DISABLE;
+    hcan->Init.AutoBusOff = DISABLE;
+    hcan->Init.AutoWakeUp = DISABLE;
+    hcan->Init.AutoRetransmission = ENABLE;
+    hcan->Init.ReceiveFifoLocked = DISABLE;
+    hcan->Init.TransmitFifoPriority = DISABLE;
 
     /* Configure CAN timing */
 
+        switch (CANbitRate)
+        {
+            case 1000:  hcan->Init.Prescaler = 2;
+                   break;
+            case 500:  hcan->Init.Prescaler = 4;
+                   break;
+            case 250:  hcan->Init.Prescaler = 8;
+                   break;
+            default:
+            case 125:  hcan->Init.Prescaler = 16;
+                  break;
+            case 100:  hcan->Init.Prescaler = 20;
+                 break;
+            case 50:  hcan->Init.Prescaler = 120;
+                 break;
+            case 20:  hcan->Init.Prescaler = 300;
+                 break;
+            case 10:  hcan->Init.Prescaler = 600;
+                 break;
+        }
+        hcan->Init.SyncJumpWidth = CAN_SJW_4TQ;
+        hcan->Init.TimeSeg1 = CAN_BS1_12TQ;
+        hcan->Init.TimeSeg2 = CAN_BS2_5TQ;
 
-    /* Configure CAN module hardware filters */
-    if(CANmodule->useCANrxFilters){
-        /* CAN module filters are used, they will be configured with */
-        /* CO_CANrxBufferInit() functions, called by separate CANopen */
-        /* init functions. */
-        /* Configure all masks so, that received message must match filter */
-    }
-    else{
-        /* CAN module filters are not used, all messages with standard 11-bit */
-        /* identifier will be received */
-        /* Configure mask 0 so, that all messages with standard identifier are accepted */
-    }
+        sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
+        sFilterConfig.FilterBank =0;
+        sFilterConfig.FilterFIFOAssignment =0;
+        sFilterConfig.FilterIdHigh =0;
+        sFilterConfig.FilterMaskIdLow = 0;
+        sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+        sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+        sFilterConfig.SlaveStartFilterBank = 0;
+
+        if (HAL_CAN_ConfigFilter(hcan, &sFilterConfig) != HAL_OK)
+        {
+            Error_Handler();
+        }
+
+        if (HAL_CAN_Init(&hcan) != HAL_OK)
+        {
+            Error_Handler();
+        }
 
 
-    /* configure CAN interrupt registers */
+
 
 
     return CO_ERROR_NO;
@@ -118,9 +215,9 @@ CO_ReturnError_t CO_CANmodule_init(
 
 /******************************************************************************/
 void CO_CANmodule_disable(CO_CANmodule_t *CANmodule) {
-    if (CANmodule != NULL) {
-        /* turn off the module */
-    }
+	if (CANmodule != NULL && CANmodule->CANptr != NULL) {
+		    HAL_CAN_Stop(CANmodule->CANptr);
+	    }
 }
 
 
@@ -406,3 +503,5 @@ void CO_CANinterrupt(CO_CANmodule_t *CANmodule){
         /* some other interrupt reason */
     }
 }
+
+
