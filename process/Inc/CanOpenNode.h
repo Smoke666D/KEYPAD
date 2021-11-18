@@ -11,7 +11,7 @@
 #include "main.h"
 
 void vCanOpenInit(CAN_HandleTypeDef *hcan);
-void vCanOpenInitProcess();
+void vCanOpenProcess(void *argument);
 void vCanOpenPeriodicProcess(void *argument);
 
 #endif /* INC_CANOPENNODE_H_ */

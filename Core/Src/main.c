@@ -82,6 +82,13 @@ const osThreadAttr_t CanOpenPeriodic_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for CanOpenProcess */
+osThreadId_t CanOpenProcessHandle;
+const osThreadAttr_t CanOpenProcess_attributes = {
+  .name = "CanOpenProcess",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal1,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -99,6 +106,7 @@ void StartDefaultTask(void *argument);
 void vKeyboardTask(void *argument);
 void vProcessTask(void *argument);
 void vCanOpenPeriodicProcess(void *argument);
+void vCanOpenProcess(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -181,6 +189,9 @@ int main(void)
 
   /* creation of CanOpenPeriodic */
   CanOpenPeriodicHandle = osThreadNew(vCanOpenPeriodicProcess, NULL, &CanOpenPeriodic_attributes);
+
+  /* creation of CanOpenProcess */
+  CanOpenProcessHandle = osThreadNew(vCanOpenProcess, NULL, &CanOpenProcess_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -602,6 +613,24 @@ __weak void vCanOpenPeriodicProcess(void *argument)
     osDelay(1);
   }
   /* USER CODE END vCanOpenPeriodicProcess */
+}
+
+/* USER CODE BEGIN Header_vCanOpenProcess */
+/**
+* @brief Function implementing the CanOpenProcess thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vCanOpenProcess */
+__weak void vCanOpenProcess(void *argument)
+{
+  /* USER CODE BEGIN vCanOpenProcess */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vCanOpenProcess */
 }
 
 /**

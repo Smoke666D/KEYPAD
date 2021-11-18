@@ -33,7 +33,7 @@ void vCanOpenInit(CAN_HandleTypeDef *hcan)
 	return;
 }
 
-void vCanOpenInitProcess()
+void vCanOpenProcess(void *argument)
 {
 	uint32_t max_sleep_time_us;
    /*Инициализация нового объекта CANOpen*/
@@ -184,14 +184,14 @@ void vCanOpenInitProcess()
    } while (reset == CO_RESET_NOT);
 
 
-   for(;;){
-
-	}
+	 /* Final end loop that never ends */
+	    while (1) {
+	        NVIC_SystemReset();
+	    }
 }
 void vCanOpenPeriodicProcess(void *argument)
 {
 	uint32_t time_old, time_current, timeDifference_us, max_sleep_time_us;
-	vCanOpenInitProcess();
 	co_drv_mutex_lock();
 	time_old = time_current = osKernelGetTickCount();
 	max_sleep_time_us = 0;

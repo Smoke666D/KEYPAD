@@ -8,7 +8,7 @@
 #include "process.h"
 #include "CANopen.h"
 #include "OD.h"
-
+#include "CO_driver_ST32F103.h"
 
 
 
@@ -16,28 +16,6 @@ static QueueHandle_t     pKeyboard        = NULL;
 static KeyEvent          TempEvent        = { 0U };
 
 
-/* Local variables */
-static CO_t* CO;
-static uint32_t co_heap_used;
-static CO_NMT_reset_cmd_t reset = CO_RESET_NOT;
-
-
-
-
-void vCanOpen_Init(void *argument)
-{
-
-	for(;;)
-	{
-
-
-	}
-
-}
-
-
-
-void vCanSendMessage(uint8_t Adress, uint8_t *pMessage);
 
 void vProceesInit( void)
 {
@@ -50,10 +28,11 @@ void vProcessTask( void * argument )
 
 	for(;;)
 	{
-		// osDelay(1);
 		//Обработка событий от клавиатуры
 		if ( xQueueReceive( pKeyboard, &TempEvent, 0U ) == pdPASS )
 		{
+
+			co_drv_mutex_lock();
 			switch (TempEvent.KeyCode)
 			{
 			   case kl1_key:
@@ -111,24 +90,14 @@ void vProcessTask( void * argument )
 				   break;
 
 			}
-
+			co_drv_mutex_unlock();
 		}
 
 
 	}
 }
 
-void vCanSendMessage(uint8_t Adress, uint8_t *pMessage)
-{
 
-	switch (Adress)
-	{
-		case keys_state_message:
-			//HAL_CAN_AddTxMessage();
-			break;
-
-	}
-}
 
 
 
