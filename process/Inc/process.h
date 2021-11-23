@@ -9,6 +9,7 @@
 #define INC_PROCESS_H_
 
 #include "main.h"
+#include "CO_ODinterface.h"
 #include "keyboard.h"
 
 
@@ -37,5 +38,6 @@
 void vProcessTask( void * argument );
 void vProceesInit( void );
 void vCanOpen_Init(void *argument);
-
+ODR_t OD_writeLED(OD_stream_t *stream, const void *buf,
+                       OD_size_t count, OD_size_t *countWritten);
 #endif /* INC_PROCESS_H_ */
