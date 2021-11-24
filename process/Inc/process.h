@@ -20,8 +20,12 @@
 #define SDO_CLI_BLOCK                   false
 #define OD_STATUS_BITS                  NULL
 
-
-
+#define SET_LED_ON_RED		0x01
+#define SET_LED_ON_GREEN	0x02
+#define SET_LED_ON_BLUE 	0x03
+#define SET_LED_BLINK_RED	0x04
+#define SET_LED_BLINK_GREEN	0x05
+#define SET_LED_BLINK_BLUE 	0x06
 
 #define KEY_STATE_REGISTER  1U
 #define K1   0x01
@@ -34,6 +38,13 @@
 #define K8   0x80
 
 #define keys_state_message 180U
+
+
+typedef struct __packed
+{
+  unsigned char command;
+  unsigned char data;
+} xLEDEvent;
 
 void vProcessTask( void * argument );
 void vProceesInit( void );

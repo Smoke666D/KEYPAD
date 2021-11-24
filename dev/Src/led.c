@@ -10,6 +10,7 @@ static uint8_t LED_ON[3] = {0,0,0};
 static uint8_t LED_BLINK[3] = {0,0,0};
 static uint8_t LedBlinkState = RESET;
 static uint8_t backligch_brigth = OFF;
+static uint8_t backligth_color = 0;
 static uint8_t blink_count = 0;
 static uint8_t RegBusyFlag = RESET;
 static uint8_t led_brigth = OFF;
@@ -40,14 +41,58 @@ void SetLedBlink(uint8_t Color,uint8_t State)
 	}
 }
 
+
+
 void SetBackLigth(uint8_t brigth)
 {
 	backligch_brigth = brigth;
-	if (backligch_brigth ! = OFF)
+	if (backligch_brigth != OFF)
 	{
 		uint8_t brigth_color[3];
 		backligch_brigth = brigth;
 		SetBrigth(backligch_brigth );
+		switch (backligth_color)
+		{
+		case  RED:
+			brigth_color[0]=0xFF;
+			brigth_color[1]=0x00;
+			brigth_color[2]=0x00;
+			break;
+		case GREEN:
+			brigth_color[0]=0x00;
+			brigth_color[1]=0xFF;
+			brigth_color[2]=0x00;
+			break;
+		case BLUE:
+			brigth_color[0]=0x00;
+			brigth_color[1]=0x00;
+			brigth_color[2]=0xFF;
+			break;
+		case YELLOW:
+			brigth_color[0]=0xFF;
+			brigth_color[1]=0xFF;
+			brigth_color[2]=0x00;
+			break;
+		case CYAN:
+			brigth_color[0]=0xFF;
+			brigth_color[1]=0x00;
+			brigth_color[2]=0xFF;
+			break;
+		case VIOLET:
+			brigth_color[0]=0x00;
+			brigth_color[1]=0xFF;
+			brigth_color[2]=0xFF;
+			break;
+		case WHITE:
+			brigth_color[0]=0xFF;
+			brigth_color[1]=0xFF;
+			brigth_color[2]=0xFF;
+			break;
+		case  AMBER:
+			break;
+		case YELLOW_GREEN:
+			break;
+		}
 		DrvLedSetState(&brigth_color[0]);
 	}
 	else

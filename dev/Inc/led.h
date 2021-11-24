@@ -17,4 +17,17 @@
 #define GREEN_COLOR 2U
 #define BLUE_COLOR  3U
 
+#define RED		     0x01
+#define GREEN	     0x02
+#define BLUE	     0x03
+#define YELLOW       0x04
+#define CYAN		 0x05
+#define VIOLET		 0x06
+#define WHITE		 0x07
+#define AMBER        0x08
+#define YELLOW_GREEN 0x09
+
+void SetLedOn(uint8_t Color,uint8_t State);
+void SetLedBlink(uint8_t Color,uint8_t State);
+
 #endif /* INC_LED_H_ */

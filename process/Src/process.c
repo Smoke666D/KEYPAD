@@ -9,19 +9,23 @@
 #include "CANopen.h"
 #include "OD.h"
 #include "CO_driver_ST32F103.h"
-
+#include "led.h"
 
 
 
 static QueueHandle_t     pKeyboard        = NULL;
 static KeyEvent          TempEvent        = { 0U };
 
+static StaticQueue_t     xLedQueue;
+static QueueHandle_t     pLedQueue;
+
+uint8_t LedBuffer[ 16U * sizeof( xLEDEvent ) ] = { 0U };
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
     .object = NULL,
-    .read = OD_readOriginal,
-    .write = OD_writeOriginal
+    .read =  OD_readOriginal,
+    .write = OD_writeLed
 };
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
@@ -36,6 +40,7 @@ uint8_t *OD_LED_data_flagsPDO = NULL;
 
 void vProceesInit( void)
 {
+	pLedQueue  = xQueueCreateStatic( 16U, sizeof( xLEDEvent ), LedBuffer, &xLedQueue );
 	pKeyboard = pGetKeyboardQueue();
 	OD_extension_init(OD_ENTRY_H2000_digitalInputModuleKeysStates,
 	                      &OD_KEY_extension);
@@ -44,7 +49,7 @@ void vProceesInit( void)
 	OD_extension_init(OD_ENTRY_H2001_digitalOutputModuleLED_ON,
 		                      &OD_LED_data_extension);
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
-	OD_LED_data_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
+	//OD_LED_data_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 }
 
 void vProcessTask( void * argument )
@@ -97,8 +102,34 @@ void vProcessTask( void * argument )
 
 void vLedProcess(void *argument)
 {
+	static xLEDEvent	 xLedEvent;
 	for(;;)
 	{
+
+		xQueueReceive(pLedQueue, &xLedEvent,portMAX_DELAY );
+		switch (xLedEvent.command)
+		{
+			case SET_LED_ON_RED:
+				    SetLedOn(RED_COLOR ,xLedEvent.data);
+					break;
+			case SET_LED_ON_GREEN:
+				    SetLedOn(GREEN_COLOR ,xLedEvent.data);
+					break;
+			case SET_LED_ON_BLUE:
+				    SetLedOn(BLUE_COLOR ,xLedEvent.data);
+					break;
+			case SET_LED_BLINK_RED:
+				    SetLedBlink(RED_COLOR ,xLedEvent.data);
+				    break;
+			case SET_LED_BLINK_GREEN:
+				    SetLedBlink(GREEN_COLOR ,xLedEvent.data);
+					break;
+			case SET_LED_BLINK_BLUE:
+				    SetLedBlink(BLUE_COLOR ,xLedEvent.data);
+					break;
+			default:
+				break;
+		}
 	}
 }
 
