@@ -89,6 +89,13 @@ const osThreadAttr_t CanOpenProcess_attributes = {
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal1,
 };
+/* Definitions for LedProcess */
+osThreadId_t LedProcessHandle;
+const osThreadAttr_t LedProcess_attributes = {
+  .name = "LedProcess",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -107,6 +114,7 @@ void vKeyboardTask(void *argument);
 void vProcessTask(void *argument);
 void vCanOpenPeriodicProcess(void *argument);
 void vCanOpenProcess(void *argument);
+void vLedProcess(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -192,6 +200,9 @@ int main(void)
 
   /* creation of CanOpenProcess */
   CanOpenProcessHandle = osThreadNew(vCanOpenProcess, NULL, &CanOpenProcess_attributes);
+
+  /* creation of LedProcess */
+  LedProcessHandle = osThreadNew(vLedProcess, NULL, &LedProcess_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -631,6 +642,24 @@ __weak void vCanOpenProcess(void *argument)
     osDelay(1);
   }
   /* USER CODE END vCanOpenProcess */
+}
+
+/* USER CODE BEGIN Header_vLedProcess */
+/**
+* @brief Function implementing the LedProcess thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vLedProcess */
+__weak void vLedProcess(void *argument)
+{
+  /* USER CODE BEGIN vLedProcess */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END vLedProcess */
 }
 
 /**

@@ -38,6 +38,7 @@
 void vProcessTask( void * argument );
 void vProceesInit( void );
 void vCanOpen_Init(void *argument);
+void vLedProcess(void *argument);
 ODR_t OD_writeLED(OD_stream_t *stream, const void *buf,
                        OD_size_t count, OD_size_t *countWritten);
 #endif /* INC_PROCESS_H_ */
