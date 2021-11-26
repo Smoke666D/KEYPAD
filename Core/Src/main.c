@@ -25,7 +25,8 @@
 /* USER CODE BEGIN Includes */
 #include "keyboard.h"
 #include "process.h"
-
+#include "canopennode.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -160,9 +161,9 @@ int main(void)
   MX_DMA_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
+  vLedInit(&htim2);
   vSetupKeyboard();
   vProceesInit();
-
   vCanOpenInit(&hcan);
   /* USER CODE END 2 */
 
@@ -368,7 +369,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 72;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 100;
+  htim2.Init.Period = 1000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -393,7 +394,6 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.Pulse = 50;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();

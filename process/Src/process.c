@@ -10,7 +10,7 @@
 #include "OD.h"
 #include "CO_driver_ST32F103.h"
 #include "led.h"
-
+//#include "objectAccessOD.h"
 
 
 static QueueHandle_t     pKeyboard        = NULL;
@@ -19,7 +19,15 @@ static KeyEvent          TempEvent        = { 0U };
 static StaticQueue_t     xLedQueue;
 static QueueHandle_t     pLedQueue;
 
+
 uint8_t LedBuffer[ 16U * sizeof( xLEDEvent ) ] = { 0U };
+
+
+ODR_t OD_writeLed(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten);
+
+ODR_t OD_writeBlink(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten);
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
@@ -27,6 +35,14 @@ OD_extension_t OD_LED_data_extension = {
     .read =  OD_readOriginal,
     .write = OD_writeLed
 };
+
+
+OD_extension_t OD_BLINK_data_extension = {
+    .object = NULL,
+    .read =  OD_readOriginal,
+    .write = OD_writeBlink
+};
+
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_KEY_extension = {
@@ -38,6 +54,7 @@ OD_extension_t OD_KEY_extension = {
 uint8_t *OD_KEY_flagsPDO = NULL;
 uint8_t *OD_LED_data_flagsPDO = NULL;
 
+
 void vProceesInit( void)
 {
 	pLedQueue  = xQueueCreateStatic( 16U, sizeof( xLEDEvent ), LedBuffer, &xLedQueue );
@@ -48,9 +65,59 @@ void vProceesInit( void)
 
 	OD_extension_init(OD_ENTRY_H2001_digitalOutputModuleLED_ON,
 		                      &OD_LED_data_extension);
+	OD_extension_init(OD_ENTRY_H2002_digitalOutputModuleLEDBlink,
+			                      &OD_BLINK_data_extension);
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 	//OD_LED_data_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 }
+
+ODR_t OD_writeLed(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten)
+{
+
+	if (stream == NULL || buf == NULL || countWritten == NULL) {
+	        return ODR_DEV_INCOMPAT;
+	    }
+	    switch (stream->subIndex) {
+	        case RED_COLOR :
+	        	SetLedOn(RED_COLOR,CO_getUint8(buf));
+	        	break;
+	        case GREEN_COLOR:
+	        	SetLedOn(GREEN_COLOR,CO_getUint8(buf));
+	        	break;
+	        case BLUE_COLOR :
+	        	SetLedOn(BLUE_COLOR,CO_getUint8(buf));
+	        	break;
+	        default:
+	        	break;
+	     }
+	    return OD_writeOriginal(stream, buf, count, countWritten);
+}
+
+ODR_t OD_writeBlink(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten)
+{
+
+	if (stream == NULL || buf == NULL || countWritten == NULL) {
+	        return ODR_DEV_INCOMPAT;
+	    }
+
+	    switch (stream->subIndex) {
+	        case RED_COLOR :
+	        	SetLedBlink(RED_COLOR,CO_getUint8(buf));
+	        	break;
+	        case GREEN_COLOR:
+	        	SetLedBlink(GREEN_COLOR,CO_getUint8(buf));
+	        	break;
+	        case BLUE_COLOR :
+	        	SetLedBlink(BLUE_COLOR,CO_getUint8(buf));
+	        	break;
+	        default:
+	        	break;
+	     }
+	    return OD_writeOriginal(stream, buf, count, countWritten);
+}
+
 
 void vProcessTask( void * argument )
 {
@@ -105,7 +172,6 @@ void vLedProcess(void *argument)
 	static xLEDEvent	 xLedEvent;
 	for(;;)
 	{
-
 		xQueueReceive(pLedQueue, &xLedEvent,portMAX_DELAY );
 		switch (xLedEvent.command)
 		{

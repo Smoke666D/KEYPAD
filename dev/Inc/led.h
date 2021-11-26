@@ -11,7 +11,7 @@
 
 #include "main.h"
 
-
+#define  MAX_BRIGTH 0x3F
 #define OFF 0x00
 #define RED_COLOR 	1U
 #define GREEN_COLOR 2U
@@ -29,5 +29,6 @@
 
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
-
+void SetBrigth(uint8_t brigth);
+void vLedInit(TIM_HandleTypeDef * htim);
 #endif /* INC_LED_H_ */
