@@ -27,8 +27,11 @@
 #define AMBER        0x08
 #define YELLOW_GREEN 0x09
 
+void SetBackLigthColor(uint8_t color);
+void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
 void vLedInit(TIM_HandleTypeDef * htim);
+void SetBackLigth(uint8_t brigth);
 #endif /* INC_LED_H_ */

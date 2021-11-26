@@ -45,7 +45,20 @@ void SetLedBlink(uint8_t Color,uint8_t State)
 	}
 }
 
+void SetLedBrigth(uint8_t brigth)
+{
+	led_brigth = brigth;
+	if (backligch_brigth == OFF)
+	{
+		SetBackLigth(led_brigth);
+	}
+}
 
+void SetBackLigthColor(uint8_t color)
+{
+	backligth_color = color;
+	SetBackLigth(backligch_brigth);
+}
 
 void SetBackLigth(uint8_t brigth)
 {
