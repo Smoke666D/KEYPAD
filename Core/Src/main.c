@@ -50,6 +50,7 @@ SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi2_tx;
 
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim4;
 
 USART_HandleTypeDef husart1;
 
@@ -110,12 +111,13 @@ static void MX_TIM2_Init(void);
 static void MX_USART1_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USB_PCD_Init(void);
+static void MX_TIM4_Init(void);
 void StartDefaultTask(void *argument);
-void vKeyboardTask(void *argument);
-void vProcessTask(void *argument);
-void vCanOpenPeriodicProcess(void *argument);
-void vCanOpenProcess(void *argument);
-void vLedProcess(void *argument);
+extern void vKeyboardTask(void *argument);
+extern void vProcessTask(void *argument);
+extern void vCanOpenPeriodicProcess(void *argument);
+extern void vCanOpenProcess(void *argument);
+extern void vLedProcess(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -160,6 +162,7 @@ int main(void)
   MX_USART1_Init();
   MX_DMA_Init();
   MX_USB_PCD_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   vLedInit(&htim2);
   vSetupKeyboard();
@@ -360,6 +363,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -372,6 +376,15 @@ static void MX_TIM2_Init(void)
   htim2.Init.Period = 1000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -398,10 +411,62 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  __HAL_TIM_DISABLE_OCxPRELOAD(&htim2, TIM_CHANNEL_4);
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 0;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 65535;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
 
 }
 
@@ -570,96 +635,6 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_vKeyboardTask */
-/**
-* @brief Function implementing the KeyboardTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vKeyboardTask */
-__weak void vKeyboardTask(void *argument)
-{
-  /* USER CODE BEGIN vKeyboardTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END vKeyboardTask */
-}
-
-/* USER CODE BEGIN Header_vProcessTask */
-/**
-* @brief Function implementing the ProcessTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vProcessTask */
-__weak void vProcessTask(void *argument)
-{
-  /* USER CODE BEGIN vProcessTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END vProcessTask */
-}
-
-/* USER CODE BEGIN Header_vCanOpenPeriodicProcess */
-/**
-* @brief Function implementing the CanOpenPeriodic thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vCanOpenPeriodicProcess */
-__weak void vCanOpenPeriodicProcess(void *argument)
-{
-  /* USER CODE BEGIN vCanOpenPeriodicProcess */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END vCanOpenPeriodicProcess */
-}
-
-/* USER CODE BEGIN Header_vCanOpenProcess */
-/**
-* @brief Function implementing the CanOpenProcess thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vCanOpenProcess */
-__weak void vCanOpenProcess(void *argument)
-{
-  /* USER CODE BEGIN vCanOpenProcess */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END vCanOpenProcess */
-}
-
-/* USER CODE BEGIN Header_vLedProcess */
-/**
-* @brief Function implementing the LedProcess thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_vLedProcess */
-__weak void vLedProcess(void *argument)
-{
-  /* USER CODE BEGIN vLedProcess */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END vLedProcess */
 }
 
 /**
