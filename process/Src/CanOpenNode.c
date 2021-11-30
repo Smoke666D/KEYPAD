@@ -145,10 +145,10 @@ void vCanOpenProcess(void *argument)
 	            co_drv_mutex_lock();
 
 	            /* Set time to max sleep in next iteration */
-	            max_sleep_time_us = (uint32_t)-1;
+	            max_sleep_time_us = 10000;
 
 	            /* Get current kernel tick time */
-	            time_current = osKernelGetTickCount();
+	            time_current = xTaskGetTickCount();
 	            timeDifference_us = (time_current - time_old) * (1000000 / configTICK_RATE_HZ);
 	            time_old = time_current;
 
@@ -193,7 +193,7 @@ void vCanOpenPeriodicProcess(void *argument)
 {
 	uint32_t time_old, time_current, timeDifference_us, max_sleep_time_us;
 	co_drv_mutex_lock();
-	time_old = time_current = osKernelGetTickCount();
+	time_old = time_current = xTaskGetTickCount();
 	max_sleep_time_us = 0;
 	for(;;)
 	{
@@ -204,13 +204,13 @@ void vCanOpenPeriodicProcess(void *argument)
 	    co_drv_mutex_lock();
 
 		/* Set time to maximum wait in next loop */
-		max_sleep_time_us = (uint32_t)-1;
+		max_sleep_time_us = 10000;
 
 		/* Verify that everything is set */
 		if (CO == NULL || !CO->CANmodule->CANnormal) {
 		        continue;
 		}
-		time_current = osKernelGetTickCount();
+		time_current = xTaskGetTickCount();
 		timeDifference_us = (time_current - time_old) * (1000000 / configTICK_RATE_HZ);
 		time_old = time_current;
 

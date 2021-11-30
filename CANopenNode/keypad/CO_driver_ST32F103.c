@@ -192,10 +192,10 @@ CO_ReturnError_t CO_CANmodule_init(
         sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
         sFilterConfig.FilterBank =0;
         sFilterConfig.FilterFIFOAssignment =0;
-        sFilterConfig.FilterIdHigh =0;
+        sFilterConfig.FilterIdHigh =0xFFFF;
         sFilterConfig.FilterMaskIdLow = 0;
         sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
-        sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+        sFilterConfig.FilterScale =CAN_FILTERSCALE_16BIT;
         sFilterConfig.SlaveStartFilterBank = 0;
 
         if (HAL_CAN_ConfigFilter(hcan, &sFilterConfig) != HAL_OK)
@@ -208,9 +208,27 @@ CO_ReturnError_t CO_CANmodule_init(
             Error_Handler();
         }
 
+        if (HAL_CAN_ActivateNotification(hcan,
+                  0
+                  | CAN_IT_TX_MAILBOX_EMPTY
+				  | CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO0_FULL | CAN_IT_RX_FIFO0_OVERRUN
+				  | CAN_IT_RX_FIFO1_MSG_PENDING | CAN_IT_RX_FIFO1_FULL | CAN_IT_RX_FIFO1_OVERRUN
+				  ) != HAL_OK) {
+              return CO_ERROR_ILLEGAL_ARGUMENT;
+          }
+        HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
+
+        HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
 
 
+        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn , 6, 0);
+       HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn );
 
+
+       HAL_NVIC_SetPriority(CAN1_RX1_IRQn  , 6, 0);
+      HAL_NVIC_EnableIRQ(CAN1_RX1_IRQn  );
 
     return CO_ERROR_NO;
 }
@@ -608,7 +626,11 @@ static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
      * \todo: Implement hardware filters...
      */
     if (CANModule_local->useCANrxFilters) {
-        __NOP();
+
+    	 buffer = CANModule_local->rxArray;
+    	 messageFound = 1;
+
+
     } else {
         /*
          * We are not using hardware filters, hence it is necessary

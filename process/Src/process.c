@@ -154,10 +154,12 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
 void vProcessTask( void * argument )
 {
    uint8_t key_mask;
+   uint8_t temp = 0;
 	for(;;)
 	{
 		//Обработка событий от клавиатуры
-	    xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
+	   /* xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
+
 		switch (TempEvent.KeyCode)
 		{
 			   case kl1_key:
@@ -193,8 +195,16 @@ void vProcessTask( void * argument )
   		 }
 		 else {
 		   OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
-		 }
+		 }*/\
+
+		 OD_RAM.x2000_digitalInputModuleKeysStates[0] =temp;
+
+		 if (temp!=0xFF)
+			 temp++;
+		 else
+			 temp = 0;
 		 OD_requestTPDO(OD_KEY_flagsPDO,1);
+		 osDelay(1000);
 	}
 }
 
@@ -202,6 +212,8 @@ void vProcessTask( void * argument )
 void vLedProcess(void *argument)
 {
 	static xLEDEvent	 xLedEvent;
+
+
 	for(;;)
 	{
 		xQueueReceive(pLedQueue, &xLedEvent,portMAX_DELAY );
@@ -228,6 +240,8 @@ void vLedProcess(void *argument)
 			default:
 				break;
 		}
+
+
 	}
 }
 

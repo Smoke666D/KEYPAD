@@ -162,6 +162,10 @@ void vKeyboardTask( void * argument )
     }
     #endif
   }
+  TEvent.KeyCode = kl1_key;
+               TEvent.Status  = MAKECODE;
+  xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
+
   return;
 }
 

@@ -26,7 +26,7 @@
 #define KEY_OFF            0x00U
 #define KEY_ON    	       0X01U
 #define KEY_ON_REPEAT      0x02U
-#define KEY_PEREOD         15U
+#define KEY_PEREOD         150U
 #define SWITCHONDELAY      30U
 #define DefaultDelay       600U
 #define DefaultRepeatRate  400U
