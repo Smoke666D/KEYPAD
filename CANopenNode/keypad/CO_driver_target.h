@@ -58,10 +58,16 @@ typedef float                   float32_t;
 typedef double                  float64_t;
 
 
+typedef struct {
+    uint32_t ident;                             /*!< Standard identifier */
+    uint8_t dlc;                                /*!< Data length */
+    uint8_t data[8];                            /*!< Received data */
+} CO_CANrxMsg_t;
+
 /* Access to received CAN message */
-#define CO_CANrxMsg_readIdent(msg) ((uint16_t)0)
-#define CO_CANrxMsg_readDLC(msg)   ((uint8_t)0)
-#define CO_CANrxMsg_readData(msg)  ((uint8_t *)NULL)
+#define CO_CANrxMsg_readIdent(msg)          ((uint16_t)(((CO_CANrxMsg_t *)(msg)))->ident)
+#define CO_CANrxMsg_readDLC(msg)            ((uint8_t)(((CO_CANrxMsg_t *)(msg)))->dlc)
+#define CO_CANrxMsg_readData(msg)           ((uint8_t *)(((CO_CANrxMsg_t *)(msg)))->data)
 
 /* Received message object */
 typedef struct {

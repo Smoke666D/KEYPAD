@@ -464,97 +464,9 @@ void CO_CANmodule_process(CO_CANmodule_t *CANmodule) {
 
 
 /******************************************************************************/
-typedef struct {
-    uint32_t ident;
-    uint8_t DLC;
-    uint8_t data[8];
-} CO_CANrxMsg_t;
-
-void CO_CANinterrupt(CO_CANmodule_t *CANmodule){
-
-    /* receive interrupt */
-    if(1){
-        CO_CANrxMsg_t *rcvMsg;      /* pointer to received message in CAN module */
-        uint16_t index;             /* index of received message */
-        uint32_t rcvMsgIdent;       /* identifier of the received message */
-        CO_CANrx_t *buffer = NULL;  /* receive message buffer from CO_CANmodule_t object. */
-        bool_t msgMatched = false;
-
-        rcvMsg = 0; /* get message from module here */
-        rcvMsgIdent = rcvMsg->ident;
-        if(CANmodule->useCANrxFilters){
-            /* CAN module filters are used. Message with known 11-bit identifier has */
-            /* been received */
-            index = 0;  /* get index of the received message here. Or something similar */
-            if(index < CANmodule->rxSize){
-                buffer = &CANmodule->rxArray[index];
-                /* verify also RTR */
-                if(((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U){
-                    msgMatched = true;
-                }
-            }
-        }
-        else{
-            /* CAN module filters are not used, message with any standard 11-bit identifier */
-            /* has been received. Search rxArray form CANmodule for the same CAN-ID. */
-            buffer = &CANmodule->rxArray[0];
-            for(index = CANmodule->rxSize; index > 0U; index--){
-                if(((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U){
-                    msgMatched = true;
-                    break;
-                }
-                buffer++;
-            }
-        }
-
-        /* Call specific function, which will process the message */
-        if(msgMatched && (buffer != NULL) && (buffer->CANrx_callback != NULL)){
-            buffer->CANrx_callback(buffer->object, (void*) rcvMsg);
-        }
-
-        /* Clear interrupt flag */
-    }
 
 
-    /* transmit interrupt */
-    else if(0){
-        /* Clear interrupt flag */
 
-
-        CANmodule->firstCANtxMessage = false;
-        /* clear flag from previous message */
-        CANmodule->bufferInhibitFlag = false;
-        /* Are there any new messages waiting to be send */
-        if(CANmodule->CANtxCount > 0U){
-            uint16_t i;             /* index of transmitting message */
-
-            /* first buffer */
-            CO_CANtx_t *buffer = &CANmodule->txArray[0];
-            /* search through whole array of pointers to transmit message buffers. */
-            for(i = CANmodule->txSize; i > 0U; i--){
-                /* if message buffer is full, send it. */
-                if(buffer->bufferFull){
-                    buffer->bufferFull = false;
-                    CANmodule->CANtxCount--;
-
-                    /* Copy message to CAN buffer */
-                    CANmodule->bufferInhibitFlag = buffer->syncFlag;
-                    /* canSend... */
-                    break;                      /* exit for loop */
-                }
-                buffer++;
-            }/* end of for loop */
-
-            /* Clear counter if no more messages */
-            if(i == 0U){
-                CANmodule->CANtxCount = 0U;
-            }
-        }
-    }
-    else{
-        /* some other interrupt reason */
-    }
-}
 
 void CAN_SendMessage()
 {
@@ -604,7 +516,7 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
 
 static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
     static CAN_RxHeaderTypeDef rx;
-    CO_CANrxMsg_t rcvMsg;
+    static CO_CANrxMsg_t rcvMsg;
     CO_CANrx_t *buffer = NULL;              /* receive message buffer from CO_CANmodule_t object. */
     uint16_t index;                         /* index of received message */
     uint32_t rcvMsgIdent;                   /* identifier of the received message */
@@ -618,7 +530,7 @@ static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
 
     /* Setup identifier (with RTR) and length */
     rcvMsg.ident = rx.StdId  | (rx.RTR == CAN_RTR_REMOTE ? FLAG_RTR : 0x00);
-    rcvMsg.DLC = rx.DLC;
+    rcvMsg.dlc = rx.DLC;
     rcvMsgIdent = rcvMsg.ident;
 
     /*
@@ -627,8 +539,13 @@ static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
      */
     if (CANModule_local->useCANrxFilters) {
 
-    	 buffer = CANModule_local->rxArray;
-    	 messageFound = 1;
+    	buffer = CANModule_local->rxArray;
+    	        for (index = CANModule_local->rxSize; index > 0U; --index, ++buffer) {
+    	            if (((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U) {
+    	                messageFound = 1;
+    	                break;
+    	            }
+    	        }
 
 
     } else {

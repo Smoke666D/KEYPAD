@@ -10,6 +10,11 @@
 
 
 #include "main.h"
+#include "stm32f1xx_hal.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "event_groups.h"
 
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
@@ -27,11 +32,26 @@
 #define AMBER        0x08
 #define YELLOW_GREEN 0x09
 
+
+#define SET_LED_ON_RED		0x01
+#define SET_LED_ON_GREEN	0x02
+#define SET_LED_ON_BLUE 	0x03
+#define SET_LED_BLINK_RED	0x04
+#define SET_LED_BLINK_GREEN	0x05
+#define SET_LED_BLINK_BLUE 	0x06
+
+typedef struct __packed
+{
+  unsigned char command;
+  unsigned char data;
+} xLEDEvent;
+
 void SetBackLigthColor(uint8_t color);
 void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
 void vLedInit(TIM_HandleTypeDef * htim);
+void vLedProcess(void *argument);
 void SetBackLigth(uint8_t brigth);
 #endif /* INC_LED_H_ */

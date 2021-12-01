@@ -16,7 +16,7 @@
 
         Created:      31.01.2017 17:13:00
         Created By:   Smoke666
-        Modified:     29.11.2021 12:13:25
+        Modified:     01.12.2021 11:25:11
         Modified By:  rOBIN 2
 
     Device Info:
@@ -43,7 +43,6 @@
 #define OD_CNT_HB_PROD 1
 #define OD_CNT_RPDO 4
 #define OD_CNT_TPDO 1
-
 
 /*******************************************************************************
     Sizes of OD arrays
@@ -76,11 +75,6 @@ typedef struct {
         uint8_t maxSub_index;
         uint32_t COB_IDUsedByRPDO;
         uint8_t transmissionType;
-    } x1400_RPDOCommunicationParameter;
-    struct {
-        uint8_t maxSub_index;
-        uint32_t COB_IDUsedByRPDO;
-        uint8_t transmissionType;
     } x1401_RPDOCommunicationParameter;
     struct {
         uint8_t maxSub_index;
@@ -92,12 +86,6 @@ typedef struct {
         uint32_t COB_IDUsedByRPDO;
         uint8_t transmissionType;
     } x1403_RPDOCommunicationParameter;
-    struct {
-        uint8_t numberOfMappedObjects;
-        uint32_t mappedObject_1;
-        uint32_t mappedObject_2;
-        uint32_t mappedObject_3;
-    } x1600_RPDOMappingParameter;
     struct {
         uint8_t numberOfMappedObjects;
         uint32_t mappedObject_1;
@@ -133,6 +121,17 @@ typedef struct {
     char x100B_object_100BhModelID[15];
     uint8_t x1011_restoreDefaultParameters_sub0;
     uint32_t x1011_restoreDefaultParameters[OD_CNT_ARR_1011];
+    struct {
+        uint8_t maxSub_index;
+        uint32_t COB_IDUsedByRPDO;
+        uint8_t transmissionType;
+    } x1400_RPDOCommunicationParameter;
+    struct {
+        uint8_t numberOfMappedObjects;
+        uint32_t mappedObject_1;
+        uint32_t mappedObject_2;
+        uint32_t mappedObject_3;
+    } x1600_RPDOMappingParameter;
     uint8_t x2000_digitalInputModuleKeysStates_sub0;
     uint8_t x2000_digitalInputModuleKeysStates[OD_CNT_ARR_2000];
     uint8_t x2001_digitalOutputModuleLED_ON_sub0;
@@ -293,10 +292,10 @@ extern OD_ATTR_OD OD_t *OD;
     (config).ENTRY_H1006 = OD_ENTRY_H1006;\
     (config).ENTRY_H1007 = OD_ENTRY_H1007;\
     (config).ENTRY_H1019 = OD_ENTRY_H1019;\
-    (config).CNT_RPDO = OD_CNT_RPDO;\
+    (config).CNT_RPDO = 0;\
     (config).ENTRY_H1400 = OD_ENTRY_H1400;\
     (config).ENTRY_H1600 = OD_ENTRY_H1600;\
-    (config).CNT_TPDO = OD_CNT_TPDO;\
+    (config).CNT_TPDO = 0;\
     (config).ENTRY_H1800 = OD_ENTRY_H1800;\
     (config).ENTRY_H1A00 = OD_ENTRY_H1A00;\
     (config).CNT_LEDS = 0;\

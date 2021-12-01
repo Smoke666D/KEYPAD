@@ -14,6 +14,8 @@ static uint8_t backligth_color = 0;
 static uint8_t blink_count = 0;
 static uint8_t RegBusyFlag = RESET;
 static uint8_t led_brigth = OFF;
+
+
 void DrvLedSetState(uint8_t * state);
 TIM_HandleTypeDef * pwmtim;
 
@@ -185,3 +187,5 @@ void BlinkProcess()
 		}
 	}
 }
+
+

@@ -10,7 +10,7 @@
 
 #include "main.h"
 #include "cmsis_os.h"
-
+#include "CO_driver_target.h"
 
 uint8_t co_drv_create_os_objects(void);
 uint8_t co_drv_mutex_lock(void);

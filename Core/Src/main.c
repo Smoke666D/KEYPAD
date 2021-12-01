@@ -87,13 +87,6 @@ const osThreadAttr_t CanOpenProcess_attributes = {
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal1,
 };
-/* Definitions for LedProcess */
-osThreadId_t LedProcessHandle;
-const osThreadAttr_t LedProcess_attributes = {
-  .name = "LedProcess",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -111,7 +104,6 @@ extern void vKeyboardTask(void *argument);
 extern void vProcessTask(void *argument);
 extern void vCanOpenPeriodicProcess(void *argument);
 extern void vCanOpenProcess(void *argument);
-extern void vLedProcess(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -196,9 +188,6 @@ int main(void)
 
   /* creation of CanOpenProcess */
   CanOpenProcessHandle = osThreadNew(vCanOpenProcess, NULL, &CanOpenProcess_attributes);
-
-  /* creation of LedProcess */
- // LedProcessHandle = osThreadNew(vLedProcess, NULL, &LedProcess_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
