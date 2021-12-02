@@ -7,20 +7,30 @@
 
 
 #include "flash_data.h"
+#include "301/CO_NMT_Heartbeat.h"
 
 static uint8_t FisrtStart = 1;
-static uint8_t SettingsREG[]={VALID_CODE,0x00,0x15,0x01};
+static uint8_t SettingsREG[]={VALID_CODE,0x00,0x15,0x01,0,0,0};
 
-uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
-uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
-uint16_t MEM_If_Init_FS(void);
-uint16_t MEM_If_Erase_FS(void);
-uint16_t MEM_If_DeInit_FS(void);
-void vFDWtiteReg(void);
+static uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
+static uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
+static uint16_t MEM_If_Init_FS(void);
+static uint16_t MEM_If_Erase_FS(void);
+static uint16_t MEM_If_DeInit_FS(void);
 
-uint8_t vFDInit()
+
+void vFDWtiteReg(void)
 {
-	uint8_t * src =  FLASH_DATA_ADR;
+	uint8_t * src = (uint8_t *) FLASH_DATA_ADR;
+	MEM_If_Init_FS();
+	MEM_If_Erase_FS();
+	MEM_If_Write_FS(&SettingsREG[0], src, sizeof(SettingsREG));
+	MEM_If_DeInit_FS();
+}
+
+void vFDInit( void )
+{
+	uint8_t * src =  (uint8_t *) FLASH_DATA_ADR;
 	uint8_t  buff;
 	if (FisrtStart)
 	{
@@ -34,30 +44,20 @@ uint8_t vFDInit()
 	}
 }
 
-
-void vFDWtiteReg(void)
+void vFDSetRegState(uint8_t adr, uint8_t state)
 {
-	uint8_t * src =  FLASH_DATA_ADR;
-	MEM_If_Init_FS();
-	MEM_If_Erase_FS();
-	MEM_If_Write_FS(&SettingsREG[0], src, sizeof(SettingsREG));
-	MEM_If_DeInit_FS();
-}
-
-
-void vFDSetBitrate(uint8_t bitrate)
-{
-
-	SettingsREG[BITRATE_ADR]= bitrate;
+	SettingsREG[adr]= state;
 	vFDWtiteReg();
 }
 
-void vFDSetNodeID(uint8_t nodeid)
+uint8_t vFDGetRegState(uint8_t adr)
 {
-	SettingsREG[NODE_ID_ADR]= nodeid;
-	vFDWtiteReg();
+	if (FisrtStart)
+	{
+	  vFDInit();
+	}
+	return SettingsREG[adr];
 }
-
 
 uint16_t vGetBitrate()
 {
@@ -91,6 +91,18 @@ uint16_t vGetBitrate()
 			break;
 	}
     return data;
+}
+
+uint16_t vFDGetNMTState()
+{
+	 uint16_t res = 0;
+	 if (FisrtStart) {
+	   vFDInit();
+     }
+	 if (SettingsREG[NMT_STATE_ADR] == 0x01) {
+		 res = CO_NMT_STARTUP_TO_OPERATIONAL;
+	 }
+	 return res;
 }
 
 uint8_t vGetNodeId()

@@ -22,6 +22,9 @@ TIM_HandleTypeDef * pwmtim;
 void vLedInit(TIM_HandleTypeDef * htim)
 {
 	pwmtim = htim;
+	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
+	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
+	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 }
 
 

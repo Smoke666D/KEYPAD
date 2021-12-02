@@ -100,7 +100,6 @@ OD_ATTR_RAM OD_RAM_t OD_RAM = {
     .x2002_digitalOutputModuleLEDBlink_sub0 = 0x03,
     .x2002_digitalOutputModuleLEDBlink = {0x00, 0x00, 0x00},
     .x2003_digitalOutputModuleBrightnessLevel_sub0 = 0x06,
-    .x2003_digitalOutputModuleBrightnessLevel = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     .x2014_setStartupLEDShow = 0x00,
     .x2100_setDEMOMode = 0x00
 };
@@ -541,40 +540,40 @@ static CO_PROGMEM ODObjs_t ODObjs = {
     },
     .o_2003_digitalOutputModuleBrightnessLevel = {
         .dataOrig0 = &OD_RAM.x2003_digitalOutputModuleBrightnessLevel_sub0,
-        .dataOrig = &OD_RAM.x2003_digitalOutputModuleBrightnessLevel[0],
+        .dataOrig = NULL,
         .attribute0 = ODA_SDO_R,
-        .attribute = ODA_SDO_RW | ODA_RPDO,
+        .attribute = ODA_SDO_W | ODA_RPDO,
         .dataElementLength = 1,
         .dataElementSizeof = sizeof(uint8_t)
     },
     .o_2010_baudRateSetting = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_R,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     },
     .o_2011_setBoot_upService = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_R,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     },
     .o_2012_setDeviceActiveOnStartup = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_R,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     },
     .o_2013_CANopenNodeID = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_R,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     },
     .o_2014_setStartupLEDShow = {
         .dataOrig = &OD_RAM.x2014_setStartupLEDShow,
-        .attribute = ODA_SDO_RW,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     },
     .o_2100_setDEMOMode = {
         .dataOrig = &OD_RAM.x2100_setDEMOMode,
-        .attribute = ODA_SDO_RW,
+        .attribute = ODA_SDO_W,
         .dataLength = 1
     }
 };

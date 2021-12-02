@@ -16,7 +16,7 @@
 
         Created:      31.01.2017 17:13:00
         Created By:   Smoke666
-        Modified:     02.12.2021 16:20:51
+        Modified:     02.12.2021 23:55:22
         Modified By:  rOBIN 2
 
     Device Info:
@@ -43,7 +43,6 @@
 #define OD_CNT_HB_PROD 1
 #define OD_CNT_RPDO 4
 #define OD_CNT_TPDO 1
-
 
 /*******************************************************************************
     Sizes of OD arrays
@@ -140,7 +139,6 @@ typedef struct {
     uint8_t x2002_digitalOutputModuleLEDBlink_sub0;
     uint8_t x2002_digitalOutputModuleLEDBlink[OD_CNT_ARR_2002];
     uint8_t x2003_digitalOutputModuleBrightnessLevel_sub0;
-    uint8_t x2003_digitalOutputModuleBrightnessLevel[OD_CNT_ARR_2003];
     uint8_t x2014_setStartupLEDShow;
     uint8_t x2100_setDEMOMode;
 } OD_RAM_t;

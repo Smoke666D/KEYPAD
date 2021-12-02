@@ -20,6 +20,14 @@
 #define SDO_CLI_BLOCK                   false
 #define OD_STATUS_BITS                  NULL
 
+#define ACTIVE  	0x01
+#define NOT_ACTIVE  0x00
+#define MIN_NODE_ID 0x01
+#define MAX_NODE_ID 0x7F
+#define MIN_BITRATE 0x00
+#define MAX_BITRATE 0x07
+#define MAX_COLOR	0x09
+#define MAX_BRIGTH  0x3F
 
 #define KEY_STATE_REGISTER  1U
 #define K1   0x01
