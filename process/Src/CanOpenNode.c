@@ -50,9 +50,9 @@ void vCanOpenProcess(void *argument)
 
 	/*Старатуем приложение*/
 	do {
-		uint16_t pendingBitRate = 125;
+		uint16_t pendingBitRate = vGetBitrate();
 		uint32_t errInfo = 0, time_old, time_current;
-		uint8_t pendingNodeId = 0x12, activeNodeId = 0;
+		uint8_t pendingNodeId = vGetNodeId(), activeNodeId = 0;
 		CO_ReturnError_t err;
 
 		/* Reset normal state */
