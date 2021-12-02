@@ -19,14 +19,11 @@ static KeyEvent          TempEvent        = { 0U };
 
 
 
-ODR_t OD_writeLed(OD_stream_t *stream, void *buf,
-                      OD_size_t count, OD_size_t *countWritten);
-
-ODR_t OD_writeBlink(OD_stream_t *stream, void *buf,
-                      OD_size_t count, OD_size_t *countWritten);
-
-ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
-        OD_size_t count, OD_size_t *countWritten);
+ODR_t OD_writeLed(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
+ODR_t OD_writeBlink(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
+ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,OD_size_t count, OD_size_t *countWritten);
+ODR_t OD_writeNode(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
+ODR_t OD_writeBITRATE(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
@@ -54,6 +51,20 @@ OD_extension_t OD_KEY_extension = {
     .write = NULL
 };
 
+
+OD_extension_t OD_NODE_data_extension = {
+    .object = NULL,
+    .read =  NULL,
+    .write = OD_writeNode
+};
+
+OD_extension_t OD_BITRATE_data_extension = {
+    .object = NULL,
+    .read =  NULL,
+    .write = OD_writeBITRATE
+};
+
+
 uint8_t *OD_KEY_flagsPDO = NULL;
 
 
@@ -71,8 +82,37 @@ void vProceesInit( void)
 			                      &OD_BLINK_data_extension);
 	OD_extension_init(OD_ENTRY_H2003_digitalOutputModuleBrightnessLevel,
 				                      &OD_BLINK_data_extension);
+
+	OD_extension_init(OD_ENTRY_H2013_CANopenNodeID,   &OD_NODE_data_extension);
+	OD_extension_init(OD_ENTRY_H2010_baudRateSetting, &OD_BITRATE_data_extension);
+
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 	//OD_LED_data_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
+}
+
+
+ODR_t OD_writeNode(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten)
+{
+
+	if (stream == NULL || buf == NULL || countWritten == NULL) {
+	        return ODR_DEV_INCOMPAT;
+	    }
+	 vFDSetNodeID(CO_getUint8(buf));
+
+	 return ODR_OK;
+}
+ODR_t OD_writeBITRATE(OD_stream_t *stream, void *buf,
+                      OD_size_t count, OD_size_t *countWritten)
+{
+
+	if (stream == NULL || buf == NULL || countWritten == NULL) {
+	        return ODR_DEV_INCOMPAT;
+	    }
+
+	vFDSetBitrate(CO_getUint8(buf));
+
+	 return ODR_OK;
 }
 
 ODR_t OD_writeLed(OD_stream_t *stream, void *buf,

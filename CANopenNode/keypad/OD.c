@@ -101,7 +101,6 @@ OD_ATTR_RAM OD_RAM_t OD_RAM = {
     .x2002_digitalOutputModuleLEDBlink = {0x00, 0x00, 0x00},
     .x2003_digitalOutputModuleBrightnessLevel_sub0 = 0x06,
     .x2003_digitalOutputModuleBrightnessLevel = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-    .x2013_CANopenNodeID = 0x00,
     .x2014_setStartupLEDShow = 0x00,
     .x2100_setDEMOMode = 0x00
 };
@@ -550,22 +549,22 @@ static CO_PROGMEM ODObjs_t ODObjs = {
     },
     .o_2010_baudRateSetting = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_RW,
+        .attribute = ODA_SDO_R,
         .dataLength = 1
     },
     .o_2011_setBoot_upService = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_RW,
+        .attribute = ODA_SDO_R,
         .dataLength = 1
     },
     .o_2012_setDeviceActiveOnStartup = {
         .dataOrig = NULL,
-        .attribute = ODA_SDO_RW,
+        .attribute = ODA_SDO_R,
         .dataLength = 1
     },
     .o_2013_CANopenNodeID = {
-        .dataOrig = &OD_RAM.x2013_CANopenNodeID,
-        .attribute = ODA_SDO_RW,
+        .dataOrig = NULL,
+        .attribute = ODA_SDO_R,
         .dataLength = 1
     },
     .o_2014_setStartupLEDShow = {

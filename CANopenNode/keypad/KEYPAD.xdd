@@ -15,7 +15,7 @@
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2021-12-01" fileModificationTime="11:25:11.8218843+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2021-12-02" fileModificationTime="16:20:51.9875906+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <q1:DeviceIdentity>
         <q1:vendorName>VENDORNAME</q1:vendorName>
         <q1:vendorID>2</q1:vendorID>
@@ -1309,7 +1309,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
               </q1:range>
             </q1:allowedValues>
           </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2010" access="readWrite">
+          <q1:parameter uniqueID="UID_OBJ_2010">
             <label lang="en">Baud rate setting</label>
             <USINT />
             <q1:allowedValues>
@@ -1320,7 +1320,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
             </q1:allowedValues>
             <q1:property name="CO_storageGroup" value="ROM" />
           </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2011" access="readWrite">
+          <q1:parameter uniqueID="UID_OBJ_2011">
             <label lang="en">Set Boot-up service</label>
             <USINT />
             <q1:allowedValues>
@@ -1330,7 +1330,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
               </q1:range>
             </q1:allowedValues>
           </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2012" access="readWrite">
+          <q1:parameter uniqueID="UID_OBJ_2012">
             <label lang="en">Set device active on startup</label>
             <USINT />
             <q1:allowedValues>
@@ -1340,13 +1340,12 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
               </q1:range>
             </q1:allowedValues>
           </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2013" access="readWrite">
+          <q1:parameter uniqueID="UID_OBJ_2013">
             <label lang="en">CANopen node ID</label>
             <USINT />
-            <q1:defaultValue value="$NODEID" />
             <q1:allowedValues>
               <q1:range>
-                <minValue value="0x00" />
+                <minValue value="0x01" />
                 <maxValue value="0x7F" />
               </q1:range>
             </q1:allowedValues>
@@ -1390,7 +1389,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2021-12-01" fileModificationTime="11:25:11.8218843+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2021-12-02" fileModificationTime="16:20:51.9875906+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <ApplicationLayers>
         <q2:CANopenObjectList>
           <CANopenObject index="1000" name="Device type" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_1000" />
