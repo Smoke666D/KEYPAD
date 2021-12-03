@@ -34,14 +34,14 @@ void vSTPInit()
 
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
 		 osDelay(1);
-		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RSET);
+		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 		 switch (i)
 		 {
 		    case 1:
 		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); //OE Low
 		    	break;
 		    case 2:
-		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RET); //OE High
+		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); //OE High
 		    	break;
 		    case 3:
 		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  //LE High

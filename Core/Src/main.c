@@ -148,7 +148,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  vLedInit(&htim2,&hspi2);
+ // vLedInit(&htim2,&hspi2);
   vSetupKeyboard();
   vProceesInit();
   vCanOpenInit(&hcan);
