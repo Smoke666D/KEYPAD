@@ -6,16 +6,10 @@
  */
 
 #include "process.h"
-#include "CANopen.h"
-#include "OD.h"
-#include "CO_driver_ST32F103.h"
-#include "led.h"
-//#include "objectAccessOD.h"
 
 
 static QueueHandle_t     pKeyboard        = NULL;
 static KeyEvent          TempEvent        = { 0U };
-
 
 static ODR_t OD_writeLed(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
 static ODR_t OD_writeBlink(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
@@ -84,7 +78,6 @@ void vProceesInit( void)
 	OD_extension_init(OD_ENTRY_H2010_baudRateSetting, &OD_BITRATE_data_extension);
 
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
-	//OD_LED_data_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 }
 
 /*

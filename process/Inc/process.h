@@ -11,7 +11,10 @@
 #include "main.h"
 #include "CO_ODinterface.h"
 #include "keyboard.h"
-
+#include "led.h"
+#include "CANopen.h"
+#include "OD.h"
+#include "CO_driver_ST32F103.h"
 
 #define NMT_CONTROL                     (CO_NMT_STARTUP_TO_OPERATIONAL | CO_NMT_ERR_ON_ERR_REG | CO_ERR_REG_GENERIC_ERR | CO_ERR_REG_COMMUNICATION)
 #define FIRST_HB_TIME                   500

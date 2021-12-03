@@ -132,3 +132,4 @@ Debug/KEYPAD.elf
 Debug/KEYPAD.list
 Debug/KEYPAD.map
 Debug/
+*.md

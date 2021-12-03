@@ -6,27 +6,27 @@
  */
 #include "led.h"
 
-static uint8_t LED_ON[3] = {0,0,0};
-static uint8_t LED_BLINK[3] = {0,0,0};
-static uint8_t LedBlinkState = RESET;
+static uint8_t LED_ON[3] 		= { 0U , 0U , 0U };
+static uint8_t LED_BLINK[3] 	= { 0U , 0U , 0U };
+static uint8_t LedBlinkState 	= RESET;
 static uint8_t backligch_brigth = OFF;
-static uint8_t backligth_color = 0;
-static uint8_t blink_count = 0;
-static uint8_t RegBusyFlag = RESET;
-static uint8_t led_brigth = OFF;
-
+static uint8_t backligth_color 	= 0U;
+static uint8_t blink_count 		= 0U;
+static uint8_t RegBusyFlag 		= RESET;
+static uint8_t led_brigth 		= OFF;
+static SPI_HandleTypeDef* LEDSpi           = NULL;
 
 void DrvLedSetState(uint8_t * state);
 TIM_HandleTypeDef * pwmtim;
 
-void vLedInit(TIM_HandleTypeDef * htim)
+void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi )
 {
 	pwmtim = htim;
+	LEDSpi = spi;
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 }
-
 
 void SetLedOn(uint8_t Color,uint8_t State)
 {
@@ -190,5 +190,87 @@ void BlinkProcess()
 		}
 	}
 }
+
+
+static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi, uint32_t Flag, FlagStatus State,
+                                                       uint32_t Timeout, uint32_t Tickstart)
+{
+  while ((__HAL_SPI_GET_FLAG(hspi, Flag) ? SET : RESET) != State)
+  {
+    if (Timeout != HAL_MAX_DELAY)
+    {
+      if (((HAL_GetTick() - Tickstart) >= Timeout) || (Timeout == 0U))
+      {
+        /* Disable the SPI and reset the CRC: the CRC value should be cleared
+        on both master and slave sides in order to resynchronize the master
+        and slave for their respective CRC calculation */
+
+        /* Disable TXE, RXNE and ERR interrupts for the interrupt process */
+        __HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_RXNE | SPI_IT_ERR));
+
+        if ((hspi->Init.Mode == SPI_MODE_MASTER) && ((hspi->Init.Direction == SPI_DIRECTION_1LINE)
+                                                     || (hspi->Init.Direction == SPI_DIRECTION_2LINES_RXONLY)))
+        {
+          /* Disable SPI peripheral */
+          __HAL_SPI_DISABLE(hspi);
+        }
+
+        /* Reset CRC Calculation */
+        if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
+        {
+          SPI_RESET_CRC(hspi);
+        }
+
+        hspi->State = HAL_SPI_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hspi);
+
+        return ( HAL_TIMEOUT );
+      }
+    }
+  }
+  return ( HAL_OK );
+}
+
+
+
+static void SPI_DMATransmit ( DMA_HandleTypeDef *hdma )
+{
+ /* SPI_HandleTypeDef *hspi     = ( SPI_HandleTypeDef* )( ( ( DMA_HandleTypeDef* ) hdma )->Parent ); /* Derogation MISRAC2012-Rule-11.5 */
+  uint32_t          tickstart = 0U;
+ //tickstart = HAL_GetTick();                          /* Init tickstart for timeout management*/
+ // __HAL_SPI_DISABLE_IT( hspi, SPI_IT_ERR );           /* Disable ERR interrupt */
+//  CLEAR_BIT( hspi->Instance->CR2, SPI_CR2_TXDMAEN );  /* Disable Tx DMA Request */
+  /* Check the end of the transaction */
+ // if ( SPI_WaitFlagStateUntilTimeout1( hspi, SPI_FLAG_BSY, RESET, SPI_DEFAULT_TIMEOUT, tickstart ) != HAL_OK )
+ // {
+ //   SET_BIT( hspi->ErrorCode, HAL_SPI_ERROR_FLAG );
+//  }
+ // hspi->TxXferCount = 0U;
+ // hspi->State       = HAL_SPI_STATE_READY;
+ // return;
+}
+
+
+
+
+
+void vLED_HAL_SPI_DMA_Init()
+{
+  LEDSpi->hdmatx->XferHalfCpltCallback = NULL;            /* Set the SPI TxDMA Half transfer complete callback */
+  LEDSpi->hdmatx->XferCpltCallback     = SPI_DMATransmit; /* Set the SPI TxDMA transfer complete callback */
+  LEDSpi->hdmatx->XferErrorCallback    = NULL;            /* Set the DMA error callback */
+  LEDSpi->hdmatx->XferAbortCallback    = NULL;            /* Set the DMA AbortCpltCallback */
+  /* Init field not used in handle to zero */
+  LEDSpi->pRxBuffPtr  = ( uint8_t* )NULL;
+  LEDSpi->TxISR       = NULL;
+  LEDSpi->RxISR       = NULL;
+  LEDSpi->RxXferSize  = 0U;
+  LEDSpi->RxXferCount = 0U;
+  return;
+}
+
+
 
 

@@ -148,7 +148,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  vLedInit(&htim2);
+  vLedInit(&htim2,&hspi2);
   vSetupKeyboard();
   vProceesInit();
   vCanOpenInit(&hcan);
@@ -178,7 +178,7 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* creation of KeyboardTask */
- // KeyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &KeyboardTask_attributes);
+  KeyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &KeyboardTask_attributes);
 
   /* creation of ProcessTask */
   ProcessTaskHandle = osThreadNew(vProcessTask, NULL, &ProcessTask_attributes);
@@ -307,10 +307,10 @@ static void MX_SPI2_Init(void)
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -609,4 +609,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
