@@ -17,15 +17,68 @@ static uint8_t led_brigth 		= OFF;
 static SPI_HandleTypeDef* LEDSpi           = NULL;
 
 void DrvLedSetState(uint8_t * state);
+static void SPI_REINIT(void);
 TIM_HandleTypeDef * pwmtim;
+
+
+void vSTPInit()
+{
+
+	// Входим в режим Detectiom
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); //OE High
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+	 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  //LE low
+	 for (uint8_t i=0;i<5;i++)
+	 {
+
+		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+		 osDelay(1);
+		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RSET);
+		 switch (i)
+		 {
+		    case 1:
+		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); //OE Low
+		    	break;
+		    case 2:
+		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RET); //OE High
+		    	break;
+		    case 3:
+		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  //LE High
+		    	break;
+		    case 4:
+		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  //LE low
+		    	break;
+		    default:
+		    	break;
+		 }
+	 }
+}
+
 
 void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi )
 {
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	pwmtim = htim;
 	LEDSpi = spi;
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
+	//Выключем SPI и переиницилизируем порты на GPIO
+	HAL_SPI_MspDeInit(LEDSpi);
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = GPIO_PIN_10;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	vSTPInit();
+	SPI_REINIT();
+	HAL_TIM_MspPostInit(pwmtim);
 }
 
 void SetLedOn(uint8_t Color,uint8_t State)
@@ -256,21 +309,34 @@ static void SPI_DMATransmit ( DMA_HandleTypeDef *hdma )
 
 
 
-void vLED_HAL_SPI_DMA_Init()
+
+
+static void SPI_REINIT(void)
 {
-  LEDSpi->hdmatx->XferHalfCpltCallback = NULL;            /* Set the SPI TxDMA Half transfer complete callback */
-  LEDSpi->hdmatx->XferCpltCallback     = SPI_DMATransmit; /* Set the SPI TxDMA transfer complete callback */
-  LEDSpi->hdmatx->XferErrorCallback    = NULL;            /* Set the DMA error callback */
-  LEDSpi->hdmatx->XferAbortCallback    = NULL;            /* Set the DMA AbortCpltCallback */
-  /* Init field not used in handle to zero */
-  LEDSpi->pRxBuffPtr  = ( uint8_t* )NULL;
-  LEDSpi->TxISR       = NULL;
-  LEDSpi->RxISR       = NULL;
-  LEDSpi->RxXferSize  = 0U;
-  LEDSpi->RxXferCount = 0U;
-  return;
+ LEDSpi->Instance = SPI2;
+ LEDSpi->Init.Mode = SPI_MODE_MASTER;
+ LEDSpi->Init.Direction = SPI_DIRECTION_2LINES;
+ LEDSpi->Init.DataSize = SPI_DATASIZE_8BIT;
+ LEDSpi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+ LEDSpi->Init.CLKPhase = SPI_PHASE_1EDGE;
+ LEDSpi->Init.NSS = SPI_NSS_SOFT;
+ LEDSpi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+ LEDSpi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+ LEDSpi->Init.TIMode = SPI_TIMODE_DISABLE;
+ LEDSpi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ LEDSpi->Init.CRCPolynomial = 10;
+ if (HAL_SPI_Init(LEDSpi) != HAL_OK)
+ {
+   Error_Handler();
+ }
+ LEDSpi->hdmatx->XferHalfCpltCallback = NULL;            /* Set the SPI TxDMA Half transfer complete callback */
+ LEDSpi->hdmatx->XferCpltCallback     = SPI_DMATransmit; /* Set the SPI TxDMA transfer complete callback */
+ LEDSpi->hdmatx->XferErrorCallback    = NULL;            /* Set the DMA error callback */
+ LEDSpi->hdmatx->XferAbortCallback    = NULL;            /* Set the DMA AbortCpltCallback */
+ /* Init field not used in handle to zero */
+ LEDSpi->pRxBuffPtr  = ( uint8_t* )NULL;
+ LEDSpi->TxISR       = NULL;
+ LEDSpi->RxISR       = NULL;
+ LEDSpi->RxXferSize  = 0U;
+ LEDSpi->RxXferCount = 0U;
 }
-
-
-
-
