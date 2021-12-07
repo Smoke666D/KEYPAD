@@ -16,10 +16,11 @@
 #define DEF_LED_BRIGTH_ADR  0x04
 #define DEF_BL_BRIGTH_ADR   0x05
 #define DEF_BL_COLOR_ADR    0x06
+#define NMT_START_MESSAGE   0x07
 
-#define REG_SIZE      		7U
+#define REG_SIZE      		8U
 
-#define VALID_CODE    0x2D
+#define VALID_CODE    0x25
 #define FLASH_SIZE 	0x08007FFFU
 #define APP_ADDRESS    	0x08008000U
 
@@ -29,3 +30,4 @@ uint8_t vGetNodeId();
 uint16_t vFDGetNMTState();
 uint8_t vFDGetRegState(uint8_t adr);
 void vFDSetRegState(uint8_t adr, uint8_t state);
+uint8_t vFDGetStartMessage();

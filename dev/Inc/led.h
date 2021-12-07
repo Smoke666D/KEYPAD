@@ -52,7 +52,10 @@ void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
-void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi );
+void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi );
 void vLedProcess(void *argument);
 void SetBackLigth(uint8_t brigth);
+void vSTPDealyInterrupt();
+void vLatch( void );
+void vSPTuSDealy(uint16_t Delay);
 #endif /* INC_LED_H_ */

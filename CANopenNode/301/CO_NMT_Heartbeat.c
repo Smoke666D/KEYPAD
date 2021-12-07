@@ -24,7 +24,7 @@
  */
 
 #include "301/CO_NMT_Heartbeat.h"
-
+#include "flash_data.h"
 
 /*
  * Read received message from CAN module.
@@ -234,7 +234,7 @@ CO_NMT_reset_cmd_t CO_NMT_process(CO_NMT_t *NMT,
     /* Send heartbeat producer message if:
      * - First start, send bootup message or
      * - HB producer enabled and: Timer expired or NMT->operatingState changed*/
-    if (NNTinit || (NMT->HBproducerTime_us != 0
+    if (  NNTinit  || (NMT->HBproducerTime_us != 0
                     && (NMT->HBproducerTimer == 0
                         || NMTstateCpy != NMT->operatingStatePrev)
     )) {

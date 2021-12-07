@@ -292,6 +292,7 @@ void vProcessTask( void * argument )
 			 temp = 0;
 		 OD_requestTPDO(OD_KEY_flagsPDO,1);
 		 osDelay(1000);
+		// vSPTuSDealy(1000);
 	}
 }
 

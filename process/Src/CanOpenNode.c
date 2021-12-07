@@ -155,22 +155,7 @@ void vCanOpenProcess(void *argument)
 	            /* CANopen process */
 	            reset = CO_process(CO, false, timeDifference_us, &max_sleep_time_us);
 
-	            /* Process LEDs and react only on change */
-	           /* LED_red_status = CO_LED_RED(CO->LEDs, CO_LED_CANopen);
-	            LED_green_status = CO_LED_GREEN(CO->LEDs, CO_LED_CANopen);
-*/
-	            /* LEDs are active low */
-	            /*if (LED_red_status && LL_GPIO_IsOutputPinSet(LED_RED_GPIO_Port, LED_RED_Pin)) {
-	                LL_GPIO_ResetOutputPin(LED_RED_GPIO_Port, LED_RED_Pin);
-	            } else if (!LED_red_status && !LL_GPIO_IsOutputPinSet(LED_RED_GPIO_Port, LED_RED_Pin)) {
-	                LL_GPIO_SetOutputPin(LED_RED_GPIO_Port, LED_RED_Pin);
-	            }
-	            if (LED_green_status && LL_GPIO_IsOutputPinSet(LED_GREEN_GPIO_Port, LED_GREEN_Pin)) {
-	                LL_GPIO_ResetOutputPin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-	            } else if (!LED_green_status && !LL_GPIO_IsOutputPinSet(LED_GREEN_GPIO_Port, LED_GREEN_Pin)) {
-	                LL_GPIO_SetOutputPin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-	            }
-*/
+
 	            /*
 	             * We want to wakeup periodic thread,
 	             * in-charge of other important CANopen tasks

@@ -105,6 +105,16 @@ uint16_t vFDGetNMTState()
 	 return res;
 }
 
+uint8_t vFDGetStartMessage()
+{
+	if (FisrtStart)
+	  {
+		  vFDInit();
+	  }
+	  return SettingsREG[NMT_START_MESSAGE];
+
+}
+
 uint8_t vGetNodeId()
 {
   if (FisrtStart)
