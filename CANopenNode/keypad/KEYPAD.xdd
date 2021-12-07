@@ -15,7 +15,7 @@
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2021-12-07" fileModificationTime="13:46:20.2924349+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2021-12-07" fileModificationTime="14:02:55.6312582+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <q1:DeviceIdentity>
         <q1:vendorName>VENDORNAME</q1:vendorName>
         <q1:vendorID>2</q1:vendorID>
@@ -416,6 +416,7 @@ bit 7: manufacturer specific</description>
 * bit 0-10: 11-bit CAN-ID</description>
             <UDINT />
             <q1:defaultValue value="0x00000080" />
+            <q1:property name="CO_disabled" value="true" />
             <q1:property name="CO_countLabel" value="SYNC" />
             <q1:property name="CO_storageGroup" value="PERSIST_COMM" />
           </q1:parameter>
@@ -423,6 +424,7 @@ bit 7: manufacturer specific</description>
             <description lang="en">Period of SYNC transmission in µs (0 = transmission disabled).</description>
             <UDINT />
             <q1:defaultValue value="0" />
+            <q1:property name="CO_disabled" value="true" />
             <q1:property name="CO_countLabel" value="SYNC_PROD" />
             <q1:property name="CO_storageGroup" value="PERSIST_COMM" />
           </q1:parameter>
@@ -430,6 +432,7 @@ bit 7: manufacturer specific</description>
             <description lang="en">Synchronous window leghth in µs (0 = not used). All synchronous PDOs must be transmitted within this time window.</description>
             <UDINT />
             <q1:defaultValue value="0" />
+            <q1:property name="CO_disabled" value="true" />
             <q1:property name="CO_storageGroup" value="PERSIST_COMM" />
           </q1:parameter>
           <q1:parameter uniqueID="UID_OBJ_1008" access="const">
@@ -530,6 +533,7 @@ bit 7: manufacturer specific</description>
 * bit 0-10: 11-bit CAN-ID</description>
             <UDINT />
             <q1:defaultValue value="0x00000100" />
+            <q1:property name="CO_disabled" value="true" />
             <q1:property name="CO_countLabel" value="TIME" />
             <q1:property name="CO_storageGroup" value="PERSIST_COMM" />
           </q1:parameter>
@@ -666,6 +670,7 @@ bit 0-31: Manufacturer specific</description>
 * Value 241-255: reserved.</description>
             <USINT />
             <q1:defaultValue value="0" />
+            <q1:property name="CO_disabled" value="true" />
             <q1:property name="CO_storageGroup" value="PERSIST_COMM" />
           </q1:parameter>
           <q1:parameter uniqueID="UID_OBJ_1020">
@@ -1385,7 +1390,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2021-12-07" fileModificationTime="13:46:20.2924349+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2021-12-07" fileModificationTime="14:02:55.6312582+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <ApplicationLayers>
         <q2:CANopenObjectList>
           <CANopenObject index="1000" name="Device type" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_1000" />

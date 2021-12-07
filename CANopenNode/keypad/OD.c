@@ -103,14 +103,9 @@ OD_ATTR_RAM OD_RAM_t OD_RAM = {
 };
 
 OD_ATTR_PERSIST_COMM OD_PERSIST_COMM_t OD_PERSIST_COMM = {
-    .x1005_COB_ID_SYNCMessage = 0x00000080,
-    .x1006_communicationCyclePeriod = 0x00000000,
-    .x1007_synchronousWindowLength = 0x00000000,
-    .x1012_COB_IDTimeStampObject = 0x00000100,
     .x1014_COB_ID_EMCY = 0x00000080,
     .x1015_inhibitTimeEMCY = 0x0000,
-    .x1017_producerHeartbeatTime = 0x0000,
-    .x1019_synchronousCounterOverflowValue = 0x00
+    .x1017_producerHeartbeatTime = 0x0000
 };
 
 
@@ -122,19 +117,14 @@ typedef struct {
     OD_obj_var_t o_1000_deviceType;
     OD_obj_var_t o_1001_errorRegister;
     OD_obj_array_t o_1003_pre_definedErrorField;
-    OD_obj_var_t o_1005_COB_ID_SYNCMessage;
-    OD_obj_var_t o_1006_communicationCyclePeriod;
-    OD_obj_var_t o_1007_synchronousWindowLength;
     OD_obj_var_t o_1008_manufacturerDeviceName;
     OD_obj_var_t o_1009_manufacturerHardwareVersion;
     OD_obj_var_t o_100A_manufacturerSoftwareVersion;
     OD_obj_var_t o_100B_object_100BhModelID;
-    OD_obj_var_t o_1012_COB_IDTimeStampObject;
     OD_obj_var_t o_1014_COB_ID_EMCY;
     OD_obj_var_t o_1015_inhibitTimeEMCY;
     OD_obj_var_t o_1017_producerHeartbeatTime;
     OD_obj_record_t o_1018_identity[5];
-    OD_obj_var_t o_1019_synchronousCounterOverflowValue;
     OD_obj_record_t o_1400_RPDOCommunicationParameter[3];
     OD_obj_record_t o_1401_RPDOCommunicationParameter[3];
     OD_obj_record_t o_1402_RPDOCommunicationParameter[3];
@@ -176,21 +166,6 @@ static CO_PROGMEM ODObjs_t ODObjs = {
         .dataElementLength = 4,
         .dataElementSizeof = sizeof(uint32_t)
     },
-    .o_1005_COB_ID_SYNCMessage = {
-        .dataOrig = &OD_PERSIST_COMM.x1005_COB_ID_SYNCMessage,
-        .attribute = ODA_SDO_RW | ODA_MB,
-        .dataLength = 4
-    },
-    .o_1006_communicationCyclePeriod = {
-        .dataOrig = &OD_PERSIST_COMM.x1006_communicationCyclePeriod,
-        .attribute = ODA_SDO_RW | ODA_MB,
-        .dataLength = 4
-    },
-    .o_1007_synchronousWindowLength = {
-        .dataOrig = &OD_PERSIST_COMM.x1007_synchronousWindowLength,
-        .attribute = ODA_SDO_RW | ODA_MB,
-        .dataLength = 4
-    },
     .o_1008_manufacturerDeviceName = {
         .dataOrig = &OD_ROM.x1008_manufacturerDeviceName[0],
         .attribute = ODA_SDO_R | ODA_STR,
@@ -210,11 +185,6 @@ static CO_PROGMEM ODObjs_t ODObjs = {
         .dataOrig = &OD_RAM.x100B_object_100BhModelID[0],
         .attribute = ODA_SDO_RW | ODA_STR,
         .dataLength = 14
-    },
-    .o_1012_COB_IDTimeStampObject = {
-        .dataOrig = &OD_PERSIST_COMM.x1012_COB_IDTimeStampObject,
-        .attribute = ODA_SDO_RW | ODA_MB,
-        .dataLength = 4
     },
     .o_1014_COB_ID_EMCY = {
         .dataOrig = &OD_PERSIST_COMM.x1014_COB_ID_EMCY,
@@ -262,11 +232,6 @@ static CO_PROGMEM ODObjs_t ODObjs = {
             .attribute = ODA_SDO_R | ODA_MB,
             .dataLength = 4
         }
-    },
-    .o_1019_synchronousCounterOverflowValue = {
-        .dataOrig = &OD_PERSIST_COMM.x1019_synchronousCounterOverflowValue,
-        .attribute = ODA_SDO_RW,
-        .dataLength = 1
     },
     .o_1400_RPDOCommunicationParameter = {
         {
@@ -564,19 +529,14 @@ static OD_ATTR_OD OD_entry_t ODList[] = {
     {0x1000, 0x01, ODT_VAR, &ODObjs.o_1000_deviceType, NULL},
     {0x1001, 0x01, ODT_VAR, &ODObjs.o_1001_errorRegister, NULL},
     {0x1003, 0x11, ODT_ARR, &ODObjs.o_1003_pre_definedErrorField, NULL},
-    {0x1005, 0x01, ODT_VAR, &ODObjs.o_1005_COB_ID_SYNCMessage, NULL},
-    {0x1006, 0x01, ODT_VAR, &ODObjs.o_1006_communicationCyclePeriod, NULL},
-    {0x1007, 0x01, ODT_VAR, &ODObjs.o_1007_synchronousWindowLength, NULL},
     {0x1008, 0x01, ODT_VAR, &ODObjs.o_1008_manufacturerDeviceName, NULL},
     {0x1009, 0x01, ODT_VAR, &ODObjs.o_1009_manufacturerHardwareVersion, NULL},
     {0x100A, 0x01, ODT_VAR, &ODObjs.o_100A_manufacturerSoftwareVersion, NULL},
     {0x100B, 0x01, ODT_VAR, &ODObjs.o_100B_object_100BhModelID, NULL},
-    {0x1012, 0x01, ODT_VAR, &ODObjs.o_1012_COB_IDTimeStampObject, NULL},
     {0x1014, 0x01, ODT_VAR, &ODObjs.o_1014_COB_ID_EMCY, NULL},
     {0x1015, 0x01, ODT_VAR, &ODObjs.o_1015_inhibitTimeEMCY, NULL},
     {0x1017, 0x01, ODT_VAR, &ODObjs.o_1017_producerHeartbeatTime, NULL},
     {0x1018, 0x05, ODT_REC, &ODObjs.o_1018_identity, NULL},
-    {0x1019, 0x01, ODT_VAR, &ODObjs.o_1019_synchronousCounterOverflowValue, NULL},
     {0x1400, 0x03, ODT_REC, &ODObjs.o_1400_RPDOCommunicationParameter, NULL},
     {0x1401, 0x03, ODT_REC, &ODObjs.o_1401_RPDOCommunicationParameter, NULL},
     {0x1402, 0x03, ODT_REC, &ODObjs.o_1402_RPDOCommunicationParameter, NULL},

@@ -16,7 +16,7 @@
 
         Created:      31.01.2017 17:13:00
         Created By:   Smoke666
-        Modified:     07.12.2021 13:46:20
+        Modified:     07.12.2021 14:02:55
         Modified By:  rOBIN 2
 
     Device Info:
@@ -35,9 +35,6 @@
 *******************************************************************************/
 #define OD_CNT_NMT 1
 #define OD_CNT_EM 1
-#define OD_CNT_SYNC 1
-#define OD_CNT_SYNC_PROD 1
-#define OD_CNT_TIME 1
 #define OD_CNT_EM_PROD 1
 #define OD_CNT_HB_PROD 1
 #define OD_CNT_RPDO 4
@@ -139,14 +136,9 @@ typedef struct {
 } OD_RAM_t;
 
 typedef struct {
-    uint32_t x1005_COB_ID_SYNCMessage;
-    uint32_t x1006_communicationCyclePeriod;
-    uint32_t x1007_synchronousWindowLength;
-    uint32_t x1012_COB_IDTimeStampObject;
     uint32_t x1014_COB_ID_EMCY;
     uint16_t x1015_inhibitTimeEMCY;
     uint16_t x1017_producerHeartbeatTime;
-    uint8_t x1019_synchronousCounterOverflowValue;
 } OD_PERSIST_COMM_t;
 
 #ifndef OD_ATTR_ROM
@@ -176,39 +168,34 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H1000 &OD->list[0]
 #define OD_ENTRY_H1001 &OD->list[1]
 #define OD_ENTRY_H1003 &OD->list[2]
-#define OD_ENTRY_H1005 &OD->list[3]
-#define OD_ENTRY_H1006 &OD->list[4]
-#define OD_ENTRY_H1007 &OD->list[5]
-#define OD_ENTRY_H1008 &OD->list[6]
-#define OD_ENTRY_H1009 &OD->list[7]
-#define OD_ENTRY_H100A &OD->list[8]
-#define OD_ENTRY_H100B &OD->list[9]
-#define OD_ENTRY_H1012 &OD->list[10]
-#define OD_ENTRY_H1014 &OD->list[11]
-#define OD_ENTRY_H1015 &OD->list[12]
-#define OD_ENTRY_H1017 &OD->list[13]
-#define OD_ENTRY_H1018 &OD->list[14]
-#define OD_ENTRY_H1019 &OD->list[15]
-#define OD_ENTRY_H1400 &OD->list[16]
-#define OD_ENTRY_H1401 &OD->list[17]
-#define OD_ENTRY_H1402 &OD->list[18]
-#define OD_ENTRY_H1403 &OD->list[19]
-#define OD_ENTRY_H1600 &OD->list[20]
-#define OD_ENTRY_H1601 &OD->list[21]
-#define OD_ENTRY_H1602 &OD->list[22]
-#define OD_ENTRY_H1603 &OD->list[23]
-#define OD_ENTRY_H1800 &OD->list[24]
-#define OD_ENTRY_H1A00 &OD->list[25]
-#define OD_ENTRY_H2000 &OD->list[26]
-#define OD_ENTRY_H2001 &OD->list[27]
-#define OD_ENTRY_H2002 &OD->list[28]
-#define OD_ENTRY_H2003 &OD->list[29]
-#define OD_ENTRY_H2010 &OD->list[30]
-#define OD_ENTRY_H2011 &OD->list[31]
-#define OD_ENTRY_H2012 &OD->list[32]
-#define OD_ENTRY_H2013 &OD->list[33]
-#define OD_ENTRY_H2014 &OD->list[34]
-#define OD_ENTRY_H2100 &OD->list[35]
+#define OD_ENTRY_H1008 &OD->list[3]
+#define OD_ENTRY_H1009 &OD->list[4]
+#define OD_ENTRY_H100A &OD->list[5]
+#define OD_ENTRY_H100B &OD->list[6]
+#define OD_ENTRY_H1014 &OD->list[7]
+#define OD_ENTRY_H1015 &OD->list[8]
+#define OD_ENTRY_H1017 &OD->list[9]
+#define OD_ENTRY_H1018 &OD->list[10]
+#define OD_ENTRY_H1400 &OD->list[11]
+#define OD_ENTRY_H1401 &OD->list[12]
+#define OD_ENTRY_H1402 &OD->list[13]
+#define OD_ENTRY_H1403 &OD->list[14]
+#define OD_ENTRY_H1600 &OD->list[15]
+#define OD_ENTRY_H1601 &OD->list[16]
+#define OD_ENTRY_H1602 &OD->list[17]
+#define OD_ENTRY_H1603 &OD->list[18]
+#define OD_ENTRY_H1800 &OD->list[19]
+#define OD_ENTRY_H1A00 &OD->list[20]
+#define OD_ENTRY_H2000 &OD->list[21]
+#define OD_ENTRY_H2001 &OD->list[22]
+#define OD_ENTRY_H2002 &OD->list[23]
+#define OD_ENTRY_H2003 &OD->list[24]
+#define OD_ENTRY_H2010 &OD->list[25]
+#define OD_ENTRY_H2011 &OD->list[26]
+#define OD_ENTRY_H2012 &OD->list[27]
+#define OD_ENTRY_H2013 &OD->list[28]
+#define OD_ENTRY_H2014 &OD->list[29]
+#define OD_ENTRY_H2100 &OD->list[30]
 
 
 /*******************************************************************************
@@ -217,39 +204,34 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H1000_deviceType &OD->list[0]
 #define OD_ENTRY_H1001_errorRegister &OD->list[1]
 #define OD_ENTRY_H1003_pre_definedErrorField &OD->list[2]
-#define OD_ENTRY_H1005_COB_ID_SYNCMessage &OD->list[3]
-#define OD_ENTRY_H1006_communicationCyclePeriod &OD->list[4]
-#define OD_ENTRY_H1007_synchronousWindowLength &OD->list[5]
-#define OD_ENTRY_H1008_manufacturerDeviceName &OD->list[6]
-#define OD_ENTRY_H1009_manufacturerHardwareVersion &OD->list[7]
-#define OD_ENTRY_H100A_manufacturerSoftwareVersion &OD->list[8]
-#define OD_ENTRY_H100B_object_100BhModelID &OD->list[9]
-#define OD_ENTRY_H1012_COB_IDTimeStampObject &OD->list[10]
-#define OD_ENTRY_H1014_COB_ID_EMCY &OD->list[11]
-#define OD_ENTRY_H1015_inhibitTimeEMCY &OD->list[12]
-#define OD_ENTRY_H1017_producerHeartbeatTime &OD->list[13]
-#define OD_ENTRY_H1018_identity &OD->list[14]
-#define OD_ENTRY_H1019_synchronousCounterOverflowValue &OD->list[15]
-#define OD_ENTRY_H1400_RPDOCommunicationParameter &OD->list[16]
-#define OD_ENTRY_H1401_RPDOCommunicationParameter &OD->list[17]
-#define OD_ENTRY_H1402_RPDOCommunicationParameter &OD->list[18]
-#define OD_ENTRY_H1403_RPDOCommunicationParameter &OD->list[19]
-#define OD_ENTRY_H1600_RPDOMappingParameter &OD->list[20]
-#define OD_ENTRY_H1601_RPDOMappingParameter &OD->list[21]
-#define OD_ENTRY_H1602_RPDOMappingParameter &OD->list[22]
-#define OD_ENTRY_H1603_RPDOMappingParameter &OD->list[23]
-#define OD_ENTRY_H1800_TPDOCommunicationParameter &OD->list[24]
-#define OD_ENTRY_H1A00_TPDOMappingParameter &OD->list[25]
-#define OD_ENTRY_H2000_digitalInputModuleKeysStates &OD->list[26]
-#define OD_ENTRY_H2001_digitalOutputModuleLED_ON &OD->list[27]
-#define OD_ENTRY_H2002_digitalOutputModuleLEDBlink &OD->list[28]
-#define OD_ENTRY_H2003_digitalOutputModuleBrightnessLevel &OD->list[29]
-#define OD_ENTRY_H2010_baudRateSetting &OD->list[30]
-#define OD_ENTRY_H2011_setBoot_upService &OD->list[31]
-#define OD_ENTRY_H2012_setDeviceActiveOnStartup &OD->list[32]
-#define OD_ENTRY_H2013_CANopenNodeID &OD->list[33]
-#define OD_ENTRY_H2014_setStartupLEDShow &OD->list[34]
-#define OD_ENTRY_H2100_setDEMOMode &OD->list[35]
+#define OD_ENTRY_H1008_manufacturerDeviceName &OD->list[3]
+#define OD_ENTRY_H1009_manufacturerHardwareVersion &OD->list[4]
+#define OD_ENTRY_H100A_manufacturerSoftwareVersion &OD->list[5]
+#define OD_ENTRY_H100B_object_100BhModelID &OD->list[6]
+#define OD_ENTRY_H1014_COB_ID_EMCY &OD->list[7]
+#define OD_ENTRY_H1015_inhibitTimeEMCY &OD->list[8]
+#define OD_ENTRY_H1017_producerHeartbeatTime &OD->list[9]
+#define OD_ENTRY_H1018_identity &OD->list[10]
+#define OD_ENTRY_H1400_RPDOCommunicationParameter &OD->list[11]
+#define OD_ENTRY_H1401_RPDOCommunicationParameter &OD->list[12]
+#define OD_ENTRY_H1402_RPDOCommunicationParameter &OD->list[13]
+#define OD_ENTRY_H1403_RPDOCommunicationParameter &OD->list[14]
+#define OD_ENTRY_H1600_RPDOMappingParameter &OD->list[15]
+#define OD_ENTRY_H1601_RPDOMappingParameter &OD->list[16]
+#define OD_ENTRY_H1602_RPDOMappingParameter &OD->list[17]
+#define OD_ENTRY_H1603_RPDOMappingParameter &OD->list[18]
+#define OD_ENTRY_H1800_TPDOCommunicationParameter &OD->list[19]
+#define OD_ENTRY_H1A00_TPDOMappingParameter &OD->list[20]
+#define OD_ENTRY_H2000_digitalInputModuleKeysStates &OD->list[21]
+#define OD_ENTRY_H2001_digitalOutputModuleLED_ON &OD->list[22]
+#define OD_ENTRY_H2002_digitalOutputModuleLEDBlink &OD->list[23]
+#define OD_ENTRY_H2003_digitalOutputModuleBrightnessLevel &OD->list[24]
+#define OD_ENTRY_H2010_baudRateSetting &OD->list[25]
+#define OD_ENTRY_H2011_setBoot_upService &OD->list[26]
+#define OD_ENTRY_H2012_setDeviceActiveOnStartup &OD->list[27]
+#define OD_ENTRY_H2013_CANopenNodeID &OD->list[28]
+#define OD_ENTRY_H2014_setStartupLEDShow &OD->list[29]
+#define OD_ENTRY_H2100_setDEMOMode &OD->list[30]
 
 
 /*******************************************************************************
@@ -272,9 +254,9 @@ extern OD_ATTR_OD OD_t *OD;
     (config).ENTRY_H1200 = OD_ENTRY_H1200;\
     (config).CNT_SDO_CLI = 0;\
     (config).ENTRY_H1280 = OD_ENTRY_H1280;\
-    (config).CNT_TIME = OD_CNT_TIME;\
+    (config).CNT_TIME = 0;\
     (config).ENTRY_H1012 = OD_ENTRY_H1012;\
-    (config).CNT_SYNC = OD_CNT_SYNC;\
+    (config).CNT_SYNC = 0;\
     (config).ENTRY_H1005 = OD_ENTRY_H1005;\
     (config).ENTRY_H1006 = OD_ENTRY_H1006;\
     (config).ENTRY_H1007 = OD_ENTRY_H1007;\
