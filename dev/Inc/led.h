@@ -19,9 +19,9 @@
 
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
-#define RED_COLOR 	1U
+#define RED_COLOR 	3U
 #define GREEN_COLOR 2U
-#define BLUE_COLOR  3U
+#define BLUE_COLOR  1U
 
 #define RED		     0x01
 #define GREEN	     0x02
@@ -46,7 +46,7 @@ typedef struct __packed
   unsigned char command;
   unsigned char data;
 } xLEDEvent;
-
+void vLedDriverStart(void);
 void SetBackLigthColor(uint8_t color);
 void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);

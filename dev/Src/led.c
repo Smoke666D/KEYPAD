@@ -6,7 +6,7 @@
  */
 #include "led.h"
 
-static uint8_t LED_ON[3] 		= { 0U , 0U , 0U };
+uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 static uint8_t LED_BLINK[3] 	= { 0U , 0U , 0U };
 static uint8_t LedBlinkState 	= RESET;
 static uint8_t backligch_brigth = OFF;
@@ -36,7 +36,8 @@ static uint16_t us_counter = 0;
 void DrvLedSetState(uint8_t * state)
 {
 	BrigthOFF();
-	SPI_Transmit_DMA( state, 24U );
+	 HAL_SPI_Transmit(LEDSpi,state,3,100);
+	//SPI_Transmit_DMA( state, 24U );
 	vLatch();
 	BrigthON();
 }
@@ -48,11 +49,10 @@ void vSTPDealyInterrupt()
 	us_counter++;
 	if  (us_counter>= us_delay)
 	{
-		HAL_TIM_Base_Stop_IT(delaytim);
-		us_counter = 0;
-	    xHigherPriorityTaskWoken = pdFALSE;
-	    xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
-	    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
+	   us_counter = 0;
+	   xHigherPriorityTaskWoken = pdFALSE;
+	   xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+	   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
 	}
 }
 
@@ -62,6 +62,7 @@ void vSPTuSDealy(uint16_t Delay)
 	us_delay = Delay;
 	HAL_TIM_Base_Start_IT(delaytim);
 	xSemaphoreTake( xSemaphore, portMAX_DELAY );
+	HAL_TIM_Base_Stop_IT(delaytim);
 }
 
 void vLatch()
@@ -133,7 +134,7 @@ uint8_t vSTPErrorDetection()
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 		 vSPTuSDealy(1);
 	 }
-	 if (buf == 0x0FFF) {
+	 if (buf == 0x0FFFFFF) {
 		 res = 0;
 	 }
 	 return res;
@@ -169,7 +170,7 @@ void vSTPNormalMode()
 
 void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi )
 {
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
+
 	pwmtim = htim;
 	delaytim = dtim;
 	LEDSpi = spi;
@@ -177,30 +178,42 @@ void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandl
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
+
+}
+
+
+void vLedDriverStart(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	//Выключем SPI и переиницилизируем порты на GPIO
-	/*HAL_SPI_MspDeInit(LEDSpi);
+	HAL_SPI_MspDeInit(LEDSpi);
 	GPIO_InitStruct.Pin = GPIO_PIN_13;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed =  GPIO_SPEED_FREQ_HIGH ;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_10;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed =  GPIO_SPEED_FREQ_HIGH ;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 	if (vSTPErrorDetection() == 0)
-	vSTPNormalMode();
-	SPI_REINIT();
+	{
+		vSTPNormalMode();
+	}
+//	SPI_REINIT();
 	HAL_TIM_MspPostInit(pwmtim);
-	BrigthON();*/
+	MX_SPI2_Init();
+	 SetLedBrigth(0x3E);
+
 
 
 }
 
 void SetLedOn(uint8_t Color,uint8_t State)
 {
-	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR)) {
+	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
 		RegBusyFlag = SET;
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
@@ -225,7 +238,7 @@ void SetLedBrigth(uint8_t brigth)
 	led_brigth = brigth;
 	if (backligch_brigth == OFF)
 	{
-		SetBackLigth(led_brigth);
+		SetBrigth(led_brigth);
 	}
 }
 
@@ -307,7 +320,7 @@ void SetBrigth(uint8_t brigth)
 	{
 
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-		sConfigOC.Pulse = (brigth/MAX_BRIGTH)*1000;
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*1000);
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -486,7 +499,7 @@ static void SPI_REINIT(void)
  LEDSpi->Init.CLKPolarity = SPI_POLARITY_HIGH;
  LEDSpi->Init.CLKPhase = SPI_PHASE_1EDGE;
  LEDSpi->Init.NSS = SPI_NSS_SOFT;
- LEDSpi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+ LEDSpi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
  LEDSpi->Init.FirstBit = SPI_FIRSTBIT_MSB;
  LEDSpi->Init.TIMode = SPI_TIMODE_DISABLE;
  LEDSpi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -505,4 +518,8 @@ static void SPI_REINIT(void)
  LEDSpi->RxISR       = NULL;
  LEDSpi->RxXferSize  = 0U;
  LEDSpi->RxXferCount = 0U;
+ if ( LEDSpi->Init.Direction == SPI_DIRECTION_1LINE )
+ {
+   SPI_1LINE_TX( LEDSpi );
+ }
 }

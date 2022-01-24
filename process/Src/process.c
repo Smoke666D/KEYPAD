@@ -241,11 +241,12 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
 void vProcessTask( void * argument )
 {
    uint8_t key_mask;
-   uint8_t temp = 0;
+   uint8_t temp = 0,keys = 2;
+   vLedDriverStart();
 	for(;;)
 	{
 		//Обработка событий от клавиатуры
-	   /* xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
+	/*    xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
 
 		switch (TempEvent.KeyCode)
 		{
@@ -282,8 +283,8 @@ void vProcessTask( void * argument )
   		 }
 		 else {
 		   OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
-		 }*/\
-
+		 }
+*/
 		 OD_RAM.x2000_digitalInputModuleKeysStates[0] =temp;
 
 		 if (temp!=0xFF)
@@ -291,8 +292,14 @@ void vProcessTask( void * argument )
 		 else
 			 temp = 0;
 		 OD_requestTPDO(OD_KEY_flagsPDO,1);
-		 osDelay(1000);
-		// vSPTuSDealy(1000);
+
+
+	//	 SetLedOn(1,keys);
+	//	 SetLedOn(BLUE,0xFF);
+		 keys= keys<<1;
+		 if ( keys ==0 ) keys = 0x01;
+		 osDelay(500);
+		 //vSPTuSDealy(3000);
 	}
 }
 

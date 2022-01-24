@@ -219,7 +219,7 @@ extern "C" {
 #define CO_CONFIG_EM_PROD_INHIBIT 0x04
 #define CO_CONFIG_EM_HISTORY 0x08
 #define CO_CONFIG_EM_STATUS_BITS 0x10
-#define CO_CONFIG_EM_CONSUMER 0x20
+//#define CO_CONFIG_EM_CONSUMER 0x20
 
 /**
  * Maximum number of @ref CO_EM_errorStatusBits_t
