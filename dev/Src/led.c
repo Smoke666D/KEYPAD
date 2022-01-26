@@ -205,7 +205,7 @@ void vLedDriverStart(void)
 //	SPI_REINIT();
 	HAL_TIM_MspPostInit(pwmtim);
 	MX_SPI2_Init();
-	 SetLedBrigth(0x3E);
+	SetLedBrigth(0x3F);
 
 
 
@@ -320,7 +320,7 @@ void SetBrigth(uint8_t brigth)
 	{
 
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*1000);
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*100);
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)

@@ -291,14 +291,17 @@ void vProcessTask( void * argument )
 			 temp++;
 		 else
 			 temp = 0;
-		 OD_requestTPDO(OD_KEY_flagsPDO,1);
+	//	 OD_requestTPDO(OD_KEY_flagsPDO,1);
 
 
-	//	 SetLedOn(1,keys);
+
+		 SetLedOn(1,keys);
+	    SetLedOn(2,keys);
+	    SetLedOn(3,keys);
 	//	 SetLedOn(BLUE,0xFF);
 		 keys= keys<<1;
 		 if ( keys ==0 ) keys = 0x01;
-		 osDelay(500);
+		 osDelay(1000);
 		 //vSPTuSDealy(3000);
 	}
 }
