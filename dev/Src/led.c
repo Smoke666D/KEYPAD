@@ -35,8 +35,12 @@ static uint16_t us_counter = 0;
 
 void DrvLedSetState(uint8_t * state)
 {
+	uint8_t buf[3];
 	BrigthOFF();
-	 HAL_SPI_Transmit(LEDSpi,state,3,100);
+	buf[0]=state[2];
+	buf[1]=state[1];
+	buf[2]=state[0];
+	 HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
 	//SPI_Transmit_DMA( state, 24U );
 	vLatch();
 	BrigthON();
