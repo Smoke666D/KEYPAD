@@ -190,11 +190,6 @@ void vLedDriverStart(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	//Выключем SPI и переиницилизируем порты на GPIO
-	HAL_SPI_MspDeInit(LEDSpi);
-	GPIO_InitStruct.Pin = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
 	GPIO_InitStruct.Speed =  GPIO_SPEED_FREQ_HIGH ;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -208,9 +203,8 @@ void vLedDriverStart(void)
 	}
 //	SPI_REINIT();
 	HAL_TIM_MspPostInit(pwmtim);
-	MX_SPI2_Init();
 	SetLedBrigth(0x3F);
-
+	DrvLedSetState(&LED_ON[0]);
 
 
 }

@@ -105,7 +105,7 @@ const osSemaphoreAttr_t vDelaySem_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
-void MX_SPI2_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USB_PCD_Init(void);
@@ -153,7 +153,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN_Init();
- // MX_SPI2_Init();
+  MX_SPI2_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USB_PCD_Init();
@@ -313,7 +313,7 @@ static void MX_CAN_Init(void)
   * @param None
   * @retval None
   */
-void MX_SPI2_Init(void)
+static void MX_SPI2_Init(void)
 {
 
   /* USER CODE BEGIN SPI2_Init 0 */
@@ -541,10 +541,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL1_Pin KL2_Pin KL3_Pin KL4_Pin
-                           KL5_Pin KL6_Pin KL7_Pin KL8_Pin */
-  GPIO_InitStruct.Pin = KL1_Pin|KL2_Pin|KL3_Pin|KL4_Pin
-                          |KL5_Pin|KL6_Pin|KL7_Pin|KL8_Pin;
+  /*Configure GPIO pins : KL1_Pin KL2_Pin KL3_Pin PB14
+                           KL4_Pin KL5_Pin KL6_Pin KL7_Pin
+                           KL8_Pin */
+  GPIO_InitStruct.Pin = KL1_Pin|KL2_Pin|KL3_Pin|GPIO_PIN_14
+                          |KL4_Pin|KL5_Pin|KL6_Pin|KL7_Pin
+                          |KL8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

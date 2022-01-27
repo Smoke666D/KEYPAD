@@ -285,24 +285,8 @@ void vProcessTask( void * argument )
 		   OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
 		 }
 
-		 OD_RAM.x2000_digitalInputModuleKeysStates[0] =temp;
-
-//		 if (temp!=0xFF)
-//			 temp++;
-//		 else
-	//		 temp = 0;
 		 OD_requestTPDO(OD_KEY_flagsPDO,1);
 
-	//	 BlinkProcess();
-
-	//	 SetLedOn(1,keys);
-	//    SetLedOn(2,keys);
-	//    SetLedOn(3,keys);
-	//	 SetLedOn(BLUE,0xFF);
-	//	 keys= keys<<1;
-	//	 if ( keys ==0 ) keys = 0x01;
-		 osDelay(100);
-		 //vSPTuSDealy(3000);
 	}
 }
 
