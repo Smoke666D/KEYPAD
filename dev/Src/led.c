@@ -65,17 +65,17 @@ void vSPTuSDealy(uint16_t Delay)
 {
 	us_delay = Delay;
 	HAL_TIM_Base_Start_IT(delaytim);
-	xSemaphoreTake( xSemaphore, portMAX_DELAY );
+	xSemaphoreTake( xSemaphore, 1 );
 	HAL_TIM_Base_Stop_IT(delaytim);
 }
 
 void vLatch()
 {
-	vSPTuSDealy(1);
+	osDelay(1);//vSPTuSDealy(1);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	vSPTuSDealy(1);
+	osDelay(1);//vSPTuSDealy(1);vSPTuSDealy(1);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	vSPTuSDealy(1);
+	osDelay(1);//vSPTuSDealy(1);vSPTuSDealy(1);
 }
 
 uint8_t vSTPErrorDetection()

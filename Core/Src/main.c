@@ -30,6 +30,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
 
@@ -77,16 +78,26 @@ const osThreadAttr_t ProcessTask_attributes = {
 };
 /* Definitions for CanOpenPeriodic */
 osThreadId_t CanOpenPeriodicHandle;
+uint32_t CanOpenPeriodicBuffer[ 256 ];
+osStaticThreadDef_t CanOpenPeriodicControlBlock;
 const osThreadAttr_t CanOpenPeriodic_attributes = {
   .name = "CanOpenPeriodic",
-  .stack_size = 128 * 4,
+  .cb_mem = &CanOpenPeriodicControlBlock,
+  .cb_size = sizeof(CanOpenPeriodicControlBlock),
+  .stack_mem = &CanOpenPeriodicBuffer[0],
+  .stack_size = sizeof(CanOpenPeriodicBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for CanOpenProcess */
 osThreadId_t CanOpenProcessHandle;
+uint32_t CanOpenProcessBuffer[ 700 ];
+osStaticThreadDef_t CanOpenProcessControlBlock;
 const osThreadAttr_t CanOpenProcess_attributes = {
   .name = "CanOpenProcess",
-  .stack_size = 256 * 4,
+  .cb_mem = &CanOpenProcessControlBlock,
+  .cb_size = sizeof(CanOpenProcessControlBlock),
+  .stack_mem = &CanOpenProcessBuffer[0],
+  .stack_size = sizeof(CanOpenProcessBuffer),
   .priority = (osPriority_t) osPriorityNormal1,
 };
 /* Definitions for vDelaySem */
