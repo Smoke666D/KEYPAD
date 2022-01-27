@@ -7,7 +7,7 @@
 #include "led.h"
 
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
-static uint8_t LED_BLINK[3] 	= { 0U , 0U , 0U };
+uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
 static uint8_t LedBlinkState 	= RESET;
 static uint8_t backligch_brigth = OFF;
 static uint8_t backligth_color 	= 0U;
@@ -224,7 +224,7 @@ void SetLedOn(uint8_t Color,uint8_t State)
 }
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
-	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR)) {
+	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
 		RegBusyFlag = SET;
 		LED_BLINK[Color-1] = State;
 		RegBusyFlag = RESET;
@@ -353,16 +353,17 @@ void BrigthOFF()
 
 
 uint8_t leds[3];
+
 void BlinkProcess()
 {
-	if ((RegBusyFlag == RESET) && (LedBlinkState = SET) && (backligch_brigth == OFF))
+	if ( (RegBusyFlag == RESET) && ( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (backligch_brigth == OFF) )
 	{
 		switch (blink_count)
 		{
 		  case 0:
 			 for (uint8_t i= 0;i<3;i++)
 			 {
-			 	leds[i] = LED_ON[i] & ~(LED_BLINK[i] & LED_ON[i]);
+			 	leds[i] = LED_ON[i] & (~LED_BLINK[i]);
 			 }
 			 DrvLedSetState(&leds[0]);
 			 blink_count = 1;
@@ -370,7 +371,7 @@ void BlinkProcess()
 		  case 1:
 			 for (uint8_t i= 0;i<3;i++)
 			 {
-				 leds[i] = LED_ON[i] | (LED_BLINK[i] & LED_ON[i]);
+				 leds[i] = LED_ON[i] | LED_BLINK[i];
 			  }
 			  DrvLedSetState(&leds[0]);
 			  blink_count = 0;
