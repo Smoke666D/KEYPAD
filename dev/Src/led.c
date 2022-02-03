@@ -8,19 +8,20 @@
 
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
-static uint8_t LedBlinkState 	= RESET;
 static uint8_t backligch_brigth = OFF;
 static uint8_t backligth_color 	= 0U;
 static uint8_t blink_count 		= 0U;
 static uint8_t RegBusyFlag 		= RESET;
 static uint8_t led_brigth 		= OFF;
+static uint8_t led_show_enable  = OFF;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
 static SemaphoreHandle_t  xSemaphore = NULL;
-
+static uint8_t flag= 0;
 static void BrigthON();
 static void BrigthOFF();
+void StartLEDShow();
 uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
@@ -182,6 +183,8 @@ void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandl
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
+	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
+
 
 }
 
@@ -203,9 +206,13 @@ void vLedDriverStart(void)
 	}
 //	SPI_REINIT();
 	HAL_TIM_MspPostInit(pwmtim);
+	if (led_show_enable)
+    {
+		led_show_enable = 0;
+		StartLEDShow();
+    }
 	SetLedBrigth(0x3F);
 	DrvLedSetState(&LED_ON[0]);
-
 
 }
 
@@ -216,7 +223,7 @@ void SetLedOn(uint8_t Color,uint8_t State)
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
 	}
-	if ((backligch_brigth == OFF) && (LedBlinkState == OFF))
+	if (backligch_brigth == OFF)
 	{
 		DrvLedSetState(&LED_ON[0]);
 	}
@@ -246,14 +253,15 @@ void SetBackLigthColor(uint8_t color)
 	SetBackLigth(backligch_brigth);
 }
 
+
+
+
 void SetBackLigth(uint8_t brigth)
 {
-	backligch_brigth = brigth;
-	if (backligch_brigth != OFF)
+
+	if (backligch_brigth == OFF)
 	{
 		uint8_t brigth_color[3];
-		backligch_brigth = brigth;
-		SetBrigth(backligch_brigth );
 		switch (backligth_color)
 		{
 		case  RED:
@@ -262,6 +270,7 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[2]=0x00;
 			break;
 		case GREEN:
+		case YELLOW_GREEN:
 			brigth_color[0]=0x00;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
@@ -272,6 +281,7 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[2]=0xFF;
 			break;
 		case YELLOW:
+		case  AMBER:
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
@@ -291,18 +301,12 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0xFF;
 			break;
-		case  AMBER:
-			break;
-		case YELLOW_GREEN:
-			break;
+
 		}
 		DrvLedSetState(&brigth_color[0]);
 	}
-	else
-	{
-		SetBrigth(led_brigth);
-		DrvLedSetState(&LED_ON[0]);
-	}
+	backligch_brigth = brigth;
+	SetBrigth(backligch_brigth );
 
 }
 
@@ -317,8 +321,9 @@ void SetBrigth(uint8_t brigth)
 	if (brigth <= MAX_BRIGTH)
 	{
 
+
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*100);
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*pwmtim->Init.Period);
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -522,3 +527,28 @@ static void SPI_REINIT(void)
    SPI_1LINE_TX( LEDSpi );
  }
 }
+
+
+
+void StartLEDShow()
+{
+
+		SetBackLigth(0);
+		for (uint8_t i=0;i<=0x3F;i++)
+		{
+
+			SetBackLigth(i);
+			osDelay(30);
+		}
+		for (uint8_t i=0x3F;i>0;i=i-1)
+		{
+			SetBackLigth(i);
+			osDelay(30);
+		}
+		SetBackLigth(0);
+
+}
+
+
+
+

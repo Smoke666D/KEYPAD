@@ -58,4 +58,5 @@ void SetBackLigth(uint8_t brigth);
 void vSTPDealyInterrupt();
 void vLatch( void );
 void vSPTuSDealy(uint16_t Delay);
+void StartLEDShow();
 #endif /* INC_LED_H_ */

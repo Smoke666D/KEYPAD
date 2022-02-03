@@ -17,10 +17,11 @@
 #define DEF_BL_BRIGTH_ADR   0x05
 #define DEF_BL_COLOR_ADR    0x06
 #define NMT_START_MESSAGE   0x07
+#define LED_SHOW_ADRRES     0x08
 
-#define REG_SIZE      		8U
+#define REG_SIZE      		9U
 
-#define VALID_CODE    0x25
+#define VALID_CODE    0x57
 #define FLASH_SIZE 	0x08007FFFU
 #define APP_ADDRESS    	0x08008000U
 

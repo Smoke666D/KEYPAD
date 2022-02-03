@@ -8,9 +8,10 @@
 
 #include "flash_data.h"
 #include "301/CO_NMT_Heartbeat.h"
+#include "led.h"
 
 static uint8_t FisrtStart = 1;
-static uint8_t SettingsREG[]={VALID_CODE,0x00,0x15,0x01,0,0,0};
+static uint8_t SettingsREG[REG_SIZE  ]={VALID_CODE,0x00,0x15,0x01,0,0,WHITE,1,1};
 
 static uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
 static uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);

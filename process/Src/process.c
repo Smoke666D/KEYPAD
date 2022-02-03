@@ -238,11 +238,14 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
      return ODR_OK;
 }
 
+
+
 void vProcessTask( void * argument )
 {
    uint8_t key_mask;
    uint8_t temp = 0,keys = 2;
-   vLedDriverStart();
+  // vLedDriverStart();
+ //  StartLEDShow();
 	for(;;)
 	{
 		//Обработка событий от клавиатуры
