@@ -41,6 +41,11 @@
 #define SET_LED_BLINK_GREEN	0x05
 #define SET_LED_BLINK_BLUE 	0x06
 
+#define DISABLE    0x00
+#define FULL_SHOW  0x01
+#define FLASH_SHOW 0x02
+
+
 typedef struct __packed
 {
   unsigned char command;
@@ -58,5 +63,5 @@ void SetBackLigth(uint8_t brigth);
 void vSTPDealyInterrupt();
 void vLatch( void );
 void vSPTuSDealy(uint16_t Delay);
-void StartLEDShow();
+void StartLEDShow(uint8_t show_type);
 #endif /* INC_LED_H_ */

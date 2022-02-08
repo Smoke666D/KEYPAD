@@ -17,6 +17,7 @@ static ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,OD_size_t count, OD_s
 static ODR_t OD_writeNode(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
 static ODR_t OD_writeBITRATE(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
 static ODR_t OD_writeNMT(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeLEDShow(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
@@ -62,6 +63,12 @@ OD_extension_t OD_NMT_data_extension = {
     .write = OD_writeNMT
 };
 
+OD_extension_t OD_LEDSHOW_data_extension = {
+    .object = NULL,
+    .read =   NULL,
+    .write = OD_writeLEDShow
+};
+
 uint8_t *OD_KEY_flagsPDO = NULL;
 
 
@@ -76,9 +83,34 @@ void vProceesInit( void)
 	OD_extension_init(OD_ENTRY_H2013_CANopenNodeID,   &OD_NODE_data_extension);
 	OD_extension_init(OD_ENTRY_H2012_setDeviceActiveOnStartup, &OD_NMT_data_extension);
 	OD_extension_init(OD_ENTRY_H2010_baudRateSetting, &OD_BITRATE_data_extension);
-
+	OD_extension_init(OD_ENTRY_H2014_setStartupLEDShow, &OD_LEDSHOW_data_extension);
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 }
+
+
+ODR_t OD_writeLEDShow(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten)
+{
+	uint8_t temp;
+	if (stream == NULL || buf == NULL || countWritten == NULL) {
+			return  ODR_DEV_INCOMPAT;
+		}
+		else {
+
+			switch (CO_getUint8(buf))
+			{
+		    	case DISABLE:
+		    	case FULL_SHOW:
+		    	case FLASH_SHOW:
+		    		vFDSetRegState( LED_SHOW_ADRRES , CO_getUint8(buf) );
+		    		return ODR_OK;
+		    	break;
+		    	default:
+		    		return ODR_INVALID_VALUE;
+			}
+		 }
+
+}
+
 
 /*
  * Callback функция записи в oбъект 2012. Принимает 2 значения, в активном NTM состояние после стратна OPERATIONAL, в не активном PRE_OPERATIONAL
@@ -193,7 +225,7 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
 
 
     if  ( ( stream->subIndex == 1U ) ||  ( stream->subIndex == 2U ) ||  ( stream->subIndex == 5U ) ||  ( stream->subIndex == 6U ) ) {
-       	if ( ( CO_getUint8(buf) !=0 ) && ( CO_getUint8(buf) <= MAX_BRIGTH ) ) {
+       	if ( ( CO_getUint8(buf) >=0 ) && ( CO_getUint8(buf) <= MAX_BRIGTH ) ) {
        		switch (stream->subIndex)
        		{
        		    case 1U:

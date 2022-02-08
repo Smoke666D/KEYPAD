@@ -6,6 +6,9 @@
  */
 #include "led.h"
 
+
+
+
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
 static uint8_t backligch_brigth = OFF;
@@ -14,6 +17,7 @@ static uint8_t blink_count 		= 0U;
 static uint8_t RegBusyFlag 		= RESET;
 static uint8_t led_brigth 		= OFF;
 static uint8_t led_show_enable  = OFF;
+static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
@@ -21,7 +25,6 @@ static SemaphoreHandle_t  xSemaphore = NULL;
 static uint8_t flag= 0;
 static void BrigthON();
 static void BrigthOFF();
-void StartLEDShow();
 uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
@@ -205,14 +208,19 @@ void vLedDriverStart(void)
 		vSTPNormalMode();
 	}
 //	SPI_REINIT();
-	HAL_TIM_MspPostInit(pwmtim);
-	if (led_show_enable)
-    {
-		led_show_enable = 0;
-		StartLEDShow();
-    }
-	SetLedBrigth(0x3F);
+	SetBackLigth(0);
 	DrvLedSetState(&LED_ON[0]);
+	HAL_TIM_MspPostInit(pwmtim);
+
+	if (led_show_enable!=DISABLE)
+    {
+	 	StartLEDShow(led_show_enable);
+		led_show_enable = DISABLE;
+
+    }
+
+	//SetBackLigth(0);
+
 
 }
 
@@ -258,7 +266,7 @@ void SetBackLigthColor(uint8_t color)
 
 void SetBackLigth(uint8_t brigth)
 {
-
+	SetBrigth(brigth );
 	if (backligch_brigth == OFF)
 	{
 		uint8_t brigth_color[3];
@@ -301,12 +309,11 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0xFF;
 			break;
-
 		}
 		DrvLedSetState(&brigth_color[0]);
 	}
 	backligch_brigth = brigth;
-	SetBrigth(backligch_brigth );
+
 
 }
 
@@ -530,22 +537,42 @@ static void SPI_REINIT(void)
 
 
 
-void StartLEDShow()
+void StartLEDShow(uint8_t show_type)
 {
 
-		SetBackLigth(0);
-		for (uint8_t i=0;i<=0x3F;i++)
+		switch (show_type)
 		{
+			case FULL_SHOW:
+				for (uint8_t i=1;i<=0x3F;i=i+2)
+				{
+					SetBackLigth(i);
+					osDelay(50);
+				}
+				for (uint8_t i = 0x3F;i>0;)
+				{
+					if (i>2)
+					{
+						i=i-2;
+						SetBackLigth(i);
+						osDelay(50);
+					}
+					else
+					{
+						SetBackLigth(0);
+						break;
+					}
+			    }
+				break;
+			case FLASH_SHOW:
+				SetBackLigth(startup_backligth);
+				osDelay(500);
+				SetBackLigth(0);
+				break;
+			default:
+				break;
 
-			SetBackLigth(i);
-			osDelay(30);
 		}
-		for (uint8_t i=0x3F;i>0;i=i-1)
-		{
-			SetBackLigth(i);
-			osDelay(30);
-		}
-		SetBackLigth(0);
+
 
 }
 
