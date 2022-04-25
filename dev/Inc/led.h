@@ -17,6 +17,8 @@
 #include "event_groups.h"
 #include "flash_data.h"
 
+//#define FLAT_VERSION
+
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
 #define RED_COLOR 	3U
@@ -57,7 +59,12 @@ void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
+#ifdef  FLAT_VERSION
+void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi, TIM_HandleTypeDef * btim );
+#else
 void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi );
+#endif
+
 void vLedProcess(void *argument);
 void SetBackLigth(uint8_t brigth);
 void vSTPDealyInterrupt();

@@ -11,6 +11,7 @@
 
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
+static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
 static uint8_t backligch_brigth = OFF;
 static uint8_t backligth_color 	= 0U;
 static uint8_t blink_count 		= 0U;
@@ -19,12 +20,19 @@ static uint8_t led_brigth 		= OFF;
 static uint8_t led_show_enable  = OFF;
 static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
+#ifdef  FLAT_VERSION
+static TIM_HandleTypeDef * backpwmtim		 = NULL;
+#endif
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
 static SemaphoreHandle_t  xSemaphore = NULL;
 static uint8_t flag= 0;
 static void BrigthON();
+
+void SetBackBrigth(uint8_t brigth);
 static void BrigthOFF();
+void BackBrigthON();
+void BackBrigthOFF();
 uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
@@ -40,14 +48,14 @@ static uint16_t us_counter = 0;
 void DrvLedSetState(uint8_t * state)
 {
 	uint8_t buf[3];
-	BrigthOFF();
+	//BrigthOFF();
 	buf[0]=state[2];
 	buf[1]=state[1];
 	buf[2]=state[0];
 	 HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
 	//SPI_Transmit_DMA( state, 24U );
 	vLatch();
-	BrigthON();
+	//BrigthON();
 }
 
 
@@ -176,9 +184,15 @@ void vSTPNormalMode()
 	 }
 }
 
+#ifdef  FLAT_VERSION
+void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi, TIM_HandleTypeDef * btim )
+#else
 void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi )
+#endif
 {
-
+#ifdef  FLAT_VERSION
+    backpwmtim = btim;
+#endif
 	pwmtim = htim;
 	delaytim = dtim;
 	LEDSpi = spi;
@@ -266,6 +280,51 @@ void SetBackLigthColor(uint8_t color)
 
 void SetBackLigth(uint8_t brigth)
 {
+#ifdef  FLAT_VERSION
+	 switch (backligth_color)
+	 {
+	 		case  RED:
+	 			brigth_color[0]=0x01;
+	 			brigth_color[1]=0x00;
+	 			brigth_color[2]=0x00;
+	 			break;
+	 		case GREEN:
+	 		case YELLOW_GREEN:
+	 			brigth_color[0]=0x00;
+	 			brigth_color[1]=0x01;
+	 			brigth_color[2]=0x00;
+	 			break;
+	 		case BLUE:
+	 			brigth_color[0]=0x00;
+	 			brigth_color[1]=0x00;
+	 			brigth_color[2]=0x01;
+	 			break;
+	 		case YELLOW:
+	 		case  AMBER:
+	 			brigth_color[0]=0x01;
+	 			brigth_color[1]=0x01;
+	 			brigth_color[2]=0x00;
+	 			break;
+	 		case CYAN:
+	 			brigth_color[0]=0x01;
+	 			brigth_color[1]=0x00;
+	 			brigth_color[2]=0x01;
+	 			break;
+	 		case VIOLET:
+	 			brigth_color[0]=0x00;
+	 			brigth_color[1]=0x01;
+	 			brigth_color[2]=0x01;
+	 			break;
+	 		case WHITE:
+	 			brigth_color[0]=0x01;
+	 			brigth_color[1]=0x01;
+	 			brigth_color[2]=0x01;
+	 			break;
+	 		}
+	 SetBackBrigth(brigth );
+
+
+#else
 	SetBrigth(brigth );
 	if (backligch_brigth == OFF)
 	{
@@ -312,42 +371,84 @@ void SetBackLigth(uint8_t brigth)
 		}
 		DrvLedSetState(&brigth_color[0]);
 	}
+#endif
 	backligch_brigth = brigth;
+}
 
+#ifdef  FLAT_VERSION
 
+void SetBackBrigth(uint8_t brigth)
+{
+
+	TIM_OC_InitTypeDef sConfigOC = {0};
+	BackBrigthOFF();
+	if (brigth <= MAX_BRIGTH)
+	{
+		sConfigOC.OCMode = TIM_OCMODE_PWM1;
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH - brigth_color[0]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth_color[1]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth_color[2]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+		{
+			Error_Handler();
+		}
+	}
+	BackBrigthON();
+
+}
+void BackBrigthON()
+{
+	HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_3);
+
+}
+void BackBrigthOFF()
+{
+	HAL_TIM_PWM_Stop(backpwmtim,TIM_CHANNEL_1);
+	HAL_TIM_PWM_Stop(backpwmtim,TIM_CHANNEL_2);
+	HAL_TIM_PWM_Stop(backpwmtim,TIM_CHANNEL_3);
 }
 
 
-
+#endif
 
 void SetBrigth(uint8_t brigth)
 {
 
 	TIM_OC_InitTypeDef sConfigOC = {0};
-	BrigthOFF();
+
+//	BrigthOFF();
 	if (brigth <= MAX_BRIGTH)
 	{
-
-
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth)/MAX_BRIGTH )*pwmtim->Init.Period);
-		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+		sConfigOC.Pulse = (uint32_t)( ( (float)(brigth)/MAX_BRIGTH )*pwmtim->Init.Period);
+		sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW ;//TIM_OCPOLARITY_HIGH;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-		{
-			Error_Handler();
-		}
-		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-		{
-			Error_Handler();
-		}
-		if (HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-		{
-			Error_Handler();
-		}
+		HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_1);
+		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_1);
+		HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_2);
+		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_2);
+		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_2);
+		HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_3);
+		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_3);
+		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_3);
 	}
-	BrigthON();
+//	BrigthON();
+
 }
+
 
 void BrigthON()
 {
