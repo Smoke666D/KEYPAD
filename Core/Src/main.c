@@ -120,8 +120,8 @@ static void MX_CAN_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_USB_PCD_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USB_PCD_Init(void);
 void StartDefaultTask(void *argument);
 extern void vKeyboardTask(void *argument);
 extern void vProcessTask(void *argument);
@@ -169,8 +169,8 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_USB_PCD_Init();
   MX_TIM4_Init();
+  MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

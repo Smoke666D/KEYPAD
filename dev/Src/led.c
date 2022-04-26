@@ -11,7 +11,7 @@
 
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
-static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
+
 static uint8_t backligch_brigth = OFF;
 static uint8_t backligth_color 	= 0U;
 static uint8_t blink_count 		= 0U;
@@ -21,12 +21,19 @@ static uint8_t led_show_enable  = OFF;
 static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
 #ifdef  FLAT_VERSION
+static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
 static TIM_HandleTypeDef * backpwmtim		 = NULL;
+#else
+enum KEY_FSM
+{
+	BACKLIGTH,
+	LED,
+};
+enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
 #endif
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
 static SemaphoreHandle_t  xSemaphore = NULL;
-static uint8_t flag= 0;
 static void BrigthON();
 
 void SetBackBrigth(uint8_t brigth);
@@ -48,14 +55,12 @@ static uint16_t us_counter = 0;
 void DrvLedSetState(uint8_t * state)
 {
 	uint8_t buf[3];
-	//BrigthOFF();
 	buf[0]=state[2];
 	buf[1]=state[1];
 	buf[2]=state[0];
 	 HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
-	//SPI_Transmit_DMA( state, 24U );
+//	SPI_Transmit_DMA( state, 24U );
 	vLatch();
-	//BrigthON();
 }
 
 
@@ -240,19 +245,18 @@ void vLedDriverStart(void)
 
 void SetLedOn(uint8_t Color,uint8_t State)
 {
+	KEYPAD_STATE = LED;
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
 		RegBusyFlag = SET;
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
 	}
-	if (backligch_brigth == OFF)
-	{
-		DrvLedSetState(&LED_ON[0]);
-	}
+	DrvLedSetState(&LED_ON[0]);
 
 }
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
+	KEYPAD_STATE = LED;
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
 		RegBusyFlag = SET;
 		LED_BLINK[Color-1] = State;
@@ -263,16 +267,16 @@ void SetLedBlink(uint8_t Color,uint8_t State)
 void SetLedBrigth(uint8_t brigth)
 {
 	led_brigth = brigth;
-	if (backligch_brigth == OFF)
-	{
-		SetBrigth(led_brigth);
-	}
+	KEYPAD_STATE = LED;
+	SetBrigth(led_brigth);
+
 }
 
 void SetBackLigthColor(uint8_t color)
 {
 	backligth_color = color;
 	SetBackLigth(backligch_brigth);
+
 }
 
 
@@ -325,12 +329,12 @@ void SetBackLigth(uint8_t brigth)
 
 
 #else
+
+	KEYPAD_STATE = BACKLIGTH;
 	SetBrigth(brigth );
-	if (backligch_brigth == OFF)
+	uint8_t brigth_color[3];
+	switch (backligth_color)
 	{
-		uint8_t brigth_color[3];
-		switch (backligth_color)
-		{
 		case  RED:
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0x00;
@@ -368,9 +372,8 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0xFF;
 			break;
-		}
-		DrvLedSetState(&brigth_color[0]);
 	}
+	DrvLedSetState(&brigth_color[0]);
 #endif
 	backligch_brigth = brigth;
 }
@@ -469,7 +472,7 @@ uint8_t leds[3];
 
 void BlinkProcess()
 {
-	if ( (RegBusyFlag == RESET) && ( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (backligch_brigth == OFF) )
+	if ( (RegBusyFlag == RESET) && ( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) )
 	{
 		switch (blink_count)
 		{
