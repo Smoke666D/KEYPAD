@@ -34,17 +34,13 @@ enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
 static SemaphoreHandle_t  xSemaphore = NULL;
-static void BrigthON();
-
 void SetBackBrigth(uint8_t brigth);
-static void BrigthOFF();
 void BackBrigthON();
 void BackBrigthOFF();
 uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
 void DrvLedSetState(uint8_t * state);
-static void SPI_REINIT(void);
 
 static uint16_t us_delay=0;
 static uint16_t us_counter = 0;
@@ -58,8 +54,7 @@ void DrvLedSetState(uint8_t * state)
 	buf[0]=state[2];
 	buf[1]=state[1];
 	buf[2]=state[0];
-	 HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
-//	SPI_Transmit_DMA( state, 24U );
+	HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
 	vLatch();
 }
 
@@ -88,11 +83,13 @@ void vSPTuSDealy(uint16_t Delay)
 
 void vLatch()
 {
-	osDelay(1);//vSPTuSDealy(1);
+	//osDelay(1);//vSPTuSDealy(1);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	osDelay(1);//vSPTuSDealy(1);vSPTuSDealy(1);
+	//osDelay(1);//vSPTuSDealy(1);
+	vSPTuSDealy(100);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	osDelay(1);//vSPTuSDealy(1);vSPTuSDealy(1);
+	//osDelay(1);//vSPTuSDealy(1);
+	vSPTuSDealy(100);
 }
 
 uint8_t vSTPErrorDetection()
@@ -226,7 +223,7 @@ void vLedDriverStart(void)
 	{
 		vSTPNormalMode();
 	}
-//	SPI_REINIT();
+
 	SetBackLigth(0);
 	DrvLedSetState(&LED_ON[0]);
 	HAL_TIM_MspPostInit(pwmtim);
@@ -237,9 +234,6 @@ void vLedDriverStart(void)
 		led_show_enable = DISABLE;
 
     }
-
-	//SetBackLigth(0);
-
 
 }
 
@@ -278,7 +272,6 @@ void SetBackLigthColor(uint8_t color)
 	SetBackLigth(backligch_brigth);
 
 }
-
 
 
 
@@ -431,7 +424,6 @@ void SetBrigth(uint8_t brigth)
 
 	TIM_OC_InitTypeDef sConfigOC = {0};
 
-//	BrigthOFF();
 	if (brigth <= MAX_BRIGTH)
 	{
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
@@ -448,25 +440,8 @@ void SetBrigth(uint8_t brigth)
 		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_3);
 		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_3);
 	}
-//	BrigthON();
 
 }
-
-
-void BrigthON()
-{
-	HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_3);
-
-}
-void BrigthOFF()
-{
-	HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_1);
-	HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_2);
-	HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_3);
-}
-
 
 uint8_t leds[3];
 
@@ -497,160 +472,15 @@ void BlinkProcess()
 }
 
 
-static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi, uint32_t Flag, FlagStatus State,
-                                                       uint32_t Timeout, uint32_t Tickstart)
-{
-  while ((__HAL_SPI_GET_FLAG(hspi, Flag) ? SET : RESET) != State)
-  {
-    if (Timeout != HAL_MAX_DELAY)
-    {
-      if (((HAL_GetTick() - Tickstart) >= Timeout) || (Timeout == 0U))
-      {
-        /* Disable the SPI and reset the CRC: the CRC value should be cleared
-        on both master and slave sides in order to resynchronize the master
-        and slave for their respective CRC calculation */
-
-        /* Disable TXE, RXNE and ERR interrupts for the interrupt process */
-        __HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_RXNE | SPI_IT_ERR));
-
-        if ((hspi->Init.Mode == SPI_MODE_MASTER) && ((hspi->Init.Direction == SPI_DIRECTION_1LINE)
-                                                     || (hspi->Init.Direction == SPI_DIRECTION_2LINES_RXONLY)))
-        {
-          /* Disable SPI peripheral */
-          __HAL_SPI_DISABLE(hspi);
-        }
-
-        /* Reset CRC Calculation */
-        if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
-        {
-          SPI_RESET_CRC(hspi);
-        }
-
-        hspi->State = HAL_SPI_STATE_READY;
-
-        /* Process Unlocked */
-        __HAL_UNLOCK(hspi);
-
-        return ( HAL_TIMEOUT );
-      }
-    }
-  }
-  return ( HAL_OK );
-}
-
-
-
-static void SPI_DMATransmit ( DMA_HandleTypeDef *hdma )
-{
-  SPI_HandleTypeDef *hspi     = ( SPI_HandleTypeDef* )( ( ( DMA_HandleTypeDef* ) hdma )->Parent ); /* Derogation MISRAC2012-Rule-11.5 */
-  uint32_t          tickstart = 0U;
- tickstart = HAL_GetTick();                          /* Init tickstart for timeout management*/
-  __HAL_SPI_DISABLE_IT( hspi, SPI_IT_ERR );           /* Disable ERR interrupt */
-  CLEAR_BIT( hspi->Instance->CR2, SPI_CR2_TXDMAEN );  /* Disable Tx DMA Request */
-  /* Check the end of the transaction */
-  if ( SPI_WaitFlagStateUntilTimeout1( hspi, SPI_FLAG_BSY, RESET, 100U , tickstart ) != HAL_OK )
-  {
-    SET_BIT( hspi->ErrorCode, HAL_SPI_ERROR_FLAG );
-  }
-  hspi->TxXferCount = 0U;
-  hspi->State       = HAL_SPI_STATE_READY;
-  return;
-}
-
-
-
-
-HAL_StatusTypeDef SPI_Transmit_DMA ( uint8_t *pData, uint16_t size )
-{
-  HAL_StatusTypeDef errorcode = HAL_OK;
-  /* Process Locked */
-  __HAL_LOCK( LEDSpi );
-  if ( LEDSpi->State != HAL_SPI_STATE_READY )
-  {
-    errorcode = HAL_BUSY;
-    goto error;
-  }
-  /* Set the transaction information */
-  LEDSpi->State       = HAL_SPI_STATE_BUSY_TX;
-  LEDSpi->ErrorCode   = HAL_SPI_ERROR_NONE;
-  LEDSpi->pTxBuffPtr  = ( uint8_t* )pData;
-  LEDSpi->TxXferSize  = size;
-  LEDSpi->TxXferCount = size;
-
-  /* Enable the Tx DMA Stream/Channel */
-  if ( HAL_OK != HAL_DMA_Start_IT( LEDSpi->hdmatx,
-				   (uint32_t)LEDSpi->pTxBuffPtr,
-				   (uint32_t)&LEDSpi->Instance->DR,
-				   LEDSpi->TxXferCount ) )
-  {
-    /* Update SPI error code */
-    SET_BIT( LEDSpi->ErrorCode, HAL_SPI_ERROR_DMA );
-    errorcode   = HAL_ERROR;
-    LEDSpi->State = HAL_SPI_STATE_READY;
-    goto error;
-  }
-  /* Check if the SPI is already enabled */
-  if ( ( LEDSpi->Instance->CR1 & SPI_CR1_SPE ) != SPI_CR1_SPE )
-  {
-    __HAL_SPI_ENABLE( LEDSpi );                      /* Enable SPI peripheral */
-  }
-  __HAL_SPI_ENABLE_IT( LEDSpi, ( SPI_IT_ERR ) );     /* Enable the SPI Error Interrupt Bit */
-  SET_BIT( LEDSpi->Instance->CR2, SPI_CR2_TXDMAEN ); /* Enable Tx DMA Request */
-
-error :
-  /* Process Unlocked */
-  __HAL_UNLOCK( LEDSpi);
-  return errorcode;
-}
-
-
-
-static void SPI_REINIT(void)
-{
- LEDSpi->Instance = SPI2;
- LEDSpi->Init.Mode = SPI_MODE_MASTER;
- LEDSpi->Init.Direction = SPI_DIRECTION_2LINES;
- LEDSpi->Init.DataSize = SPI_DATASIZE_8BIT;
- LEDSpi->Init.CLKPolarity = SPI_POLARITY_HIGH;
- LEDSpi->Init.CLKPhase = SPI_PHASE_1EDGE;
- LEDSpi->Init.NSS = SPI_NSS_SOFT;
- LEDSpi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
- LEDSpi->Init.FirstBit = SPI_FIRSTBIT_MSB;
- LEDSpi->Init.TIMode = SPI_TIMODE_DISABLE;
- LEDSpi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
- LEDSpi->Init.CRCPolynomial = 10;
- if (HAL_SPI_Init(LEDSpi) != HAL_OK)
- {
-   Error_Handler();
- }
- LEDSpi->hdmatx->XferHalfCpltCallback = NULL;            /* Set the SPI TxDMA Half transfer complete callback */
- LEDSpi->hdmatx->XferCpltCallback     = SPI_DMATransmit; /* Set the SPI TxDMA transfer complete callback */
- LEDSpi->hdmatx->XferErrorCallback    = NULL;            /* Set the DMA error callback */
- LEDSpi->hdmatx->XferAbortCallback    = NULL;            /* Set the DMA AbortCpltCallback */
- /* Init field not used in handle to zero */
- LEDSpi->pRxBuffPtr  = ( uint8_t* )NULL;
- LEDSpi->TxISR       = NULL;
- LEDSpi->RxISR       = NULL;
- LEDSpi->RxXferSize  = 0U;
- LEDSpi->RxXferCount = 0U;
- if ( LEDSpi->Init.Direction == SPI_DIRECTION_1LINE )
- {
-   SPI_1LINE_TX( LEDSpi );
- }
-}
-
-
-
 void StartLEDShow(uint8_t show_type)
 {
-
 		switch (show_type)
 		{
 			case FULL_SHOW:
 				for (uint8_t i=1;i<=0x3F;i=i+2)
 				{
 					SetBackLigth(i);
-					osDelay(50);
+					vTaskDelay(50);
 				}
 				for (uint8_t i = 0x3F;i>0;)
 				{
@@ -658,7 +488,7 @@ void StartLEDShow(uint8_t show_type)
 					{
 						i=i-2;
 						SetBackLigth(i);
-						osDelay(50);
+						vTaskDelay(50);
 					}
 					else
 					{
@@ -669,7 +499,7 @@ void StartLEDShow(uint8_t show_type)
 				break;
 			case FLASH_SHOW:
 				SetBackLigth(startup_backligth);
-				osDelay(500);
+				vTaskDelay(500);
 				SetBackLigth(0);
 				break;
 			default:
