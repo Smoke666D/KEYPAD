@@ -17,13 +17,20 @@
 #include "event_groups.h"
 #include "flash_data.h"
 
-//#define FLAT_VERSION
+#define FLAT_VERSION
 
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
-#define RED_COLOR 	3U
-#define GREEN_COLOR 2U
-#define BLUE_COLOR  1U
+
+#ifdef FLAT_VERSION
+	#define RED_COLOR 	1U
+	#define GREEN_COLOR 2U
+	#define BLUE_COLOR  3U
+#else
+	#define RED_COLOR 	3U
+	#define GREEN_COLOR 2U
+	#define BLUE_COLOR  1U
+#endif
 
 #define RED		     0x01
 #define GREEN	     0x02

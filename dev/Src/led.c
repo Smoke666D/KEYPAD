@@ -23,14 +23,14 @@ static SPI_HandleTypeDef* LEDSpi         = NULL;
 #ifdef  FLAT_VERSION
 static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
 static TIM_HandleTypeDef * backpwmtim		 = NULL;
-#else
+#endif
 enum KEY_FSM
 {
 	BACKLIGTH,
 	LED,
 };
 enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
-#endif
+
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
 static SemaphoreHandle_t  xSemaphore = NULL;
@@ -199,7 +199,7 @@ void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandl
 	delaytim = dtim;
 	LEDSpi = spi;
 	xSemaphore = temp;
-	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
+	backligth_color  = 7; //vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
@@ -240,7 +240,13 @@ void vLedDriverStart(void)
 void SetLedOn(uint8_t Color,uint8_t State)
 {
 	KEYPAD_STATE = LED;
-	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
+#ifdef FLAT_VERSION
+	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
+#else
+	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
+#endif
+	{
+
 		RegBusyFlag = SET;
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
@@ -381,25 +387,20 @@ void SetBackBrigth(uint8_t brigth)
 	if (brigth <= MAX_BRIGTH)
 	{
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH - brigth_color[0]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-		{
-			Error_Handler();
-		}
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth_color[1]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
-		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-		{
-			Error_Handler();
-		}
-		sConfigOC.Pulse = (uint32_t)( ( (float)(MAX_BRIGTH-brigth_color[2]*brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
-		if (HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-		{
-			Error_Handler();
-		}
+		sConfigOC.Pulse = (uint32_t)( ((float)(brigth)/MAX_BRIGTH) *backpwmtim->Init.Period);
+		HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_1);
+		sConfigOC.Pulse = (uint32_t)( ((float)(brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+		HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_2);
+	    HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_2);
+		sConfigOC.Pulse = (uint32_t)( ((float)(brigth)/MAX_BRIGTH )*backpwmtim->Init.Period);
+		HAL_TIM_PWM_ConfigChannel(backpwmtim, &sConfigOC, TIM_CHANNEL_3);
+		HAL_TIM_PWM_Start(backpwmtim,TIM_CHANNEL_3);
 	}
-	BackBrigthON();
+	//BackBrigthON();
 
 }
 void BackBrigthON()
@@ -479,6 +480,8 @@ void StartLEDShow(uint8_t show_type)
 			case FULL_SHOW:
 				for (uint8_t i=1;i<=0x3F;i=i+2)
 				{
+					//SetBrigth(0x1F);
+					//SetLedOn(BLUE_COLOR,0x10);
 					SetBackLigth(i);
 					vTaskDelay(50);
 				}
