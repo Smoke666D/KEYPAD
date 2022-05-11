@@ -79,7 +79,7 @@ const osThreadAttr_t ProcessTask_attributes = {
 };
 /* Definitions for CanOpenPeriodic */
 osThreadId_t CanOpenPeriodicHandle;
-uint32_t CanOpenPeriodicBuffer[ 256 ];
+uint32_t CanOpenPeriodicBuffer[ 300 ];
 osStaticThreadDef_t CanOpenPeriodicControlBlock;
 const osThreadAttr_t CanOpenPeriodic_attributes = {
   .name = "CanOpenPeriodic",

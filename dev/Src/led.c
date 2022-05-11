@@ -85,11 +85,12 @@ void vLatch()
 {
 	//osDelay(1);//vSPTuSDealy(1);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	//osDelay(1);//vSPTuSDealy(1);
-	vSPTuSDealy(100);
+	osDelay(1);
+	//vSPTuSDealy(1);
+	//vSPTuSDealy(100);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	//osDelay(1);//vSPTuSDealy(1);
-	vSPTuSDealy(100);
+	osDelay(1);//vSPTuSDealy(1);
+	//vSPTuSDealy(100);
 }
 
 uint8_t vSTPErrorDetection()
@@ -246,7 +247,6 @@ void SetLedOn(uint8_t Color,uint8_t State)
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
 #endif
 	{
-
 		RegBusyFlag = SET;
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
@@ -257,7 +257,12 @@ void SetLedOn(uint8_t Color,uint8_t State)
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
 	KEYPAD_STATE = LED;
-	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR)) {
+#ifdef FLAT_VERSION
+	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
+#else
+	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
+#endif
+	{
 		RegBusyFlag = SET;
 		LED_BLINK[Color-1] = State;
 		RegBusyFlag = RESET;
@@ -448,25 +453,25 @@ uint8_t leds[3];
 
 void BlinkProcess()
 {
-	if ( (RegBusyFlag == RESET) && ( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) )
+	if ( (RegBusyFlag == RESET) &&  (( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) || (blink_count == 1)) )
 	{
 		switch (blink_count)
 		{
-		  case 0:
+		  case 1:
 			 for (uint8_t i= 0;i<3;i++)
 			 {
 			 	leds[i] = LED_ON[i] & (~LED_BLINK[i]);
 			 }
 			 DrvLedSetState(&leds[0]);
-			 blink_count = 1;
+			 blink_count = 0;
 			 break;
-		  case 1:
+		  case 0:
 			 for (uint8_t i= 0;i<3;i++)
 			 {
 				 leds[i] = LED_ON[i] | LED_BLINK[i];
 			  }
 			  DrvLedSetState(&leds[0]);
-			  blink_count = 0;
+			  blink_count = 1;
 			  break;
 		}
 	}
