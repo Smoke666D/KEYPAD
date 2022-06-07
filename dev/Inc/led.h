@@ -17,7 +17,7 @@
 #include "event_groups.h"
 #include "flash_data.h"
 
-#define FLAT_VERSION
+
 
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
