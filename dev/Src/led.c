@@ -418,7 +418,7 @@ uint8_t leds[3];
 
 void BlinkProcess()
 {
-	if ( (RegBusyFlag == RESET) &&  (( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) || (blink_count == 1)) )
+	if ( (RegBusyFlag == RESET) &&  (( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) /*|| (blink_count == 1)*/) )
 	{
 		switch (blink_count)
 		{
