@@ -31,7 +31,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
-typedef StaticSemaphore_t osStaticSemaphoreDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -103,13 +103,13 @@ const osThreadAttr_t CanOpenProcess_attributes = {
   .stack_size = sizeof(CanOpenProcessBuffer),
   .priority = (osPriority_t) osPriorityNormal1,
 };
-/* Definitions for vDelaySem */
-osSemaphoreId_t vDelaySemHandle;
-osStaticSemaphoreDef_t vDelaySemControlBlock;
-const osSemaphoreAttr_t vDelaySem_attributes = {
-  .name = "vDelaySem",
-  .cb_mem = &vDelaySemControlBlock,
-  .cb_size = sizeof(vDelaySemControlBlock),
+/* Definitions for eSPIDelay */
+osEventFlagsId_t eSPIDelayHandle;
+osStaticEventGroupDef_t eSPIDelayControlBlock;
+const osEventFlagsAttr_t eSPIDelay_attributes = {
+  .name = "eSPIDelay",
+  .cb_mem = &eSPIDelayControlBlock,
+  .cb_size = sizeof(eSPIDelayControlBlock),
 };
 /* USER CODE BEGIN PV */
 
@@ -189,10 +189,6 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
-  /* Create the semaphores(s) */
-  /* creation of vDelaySem */
-  vDelaySemHandle = osSemaphoreNew(1, 1, &vDelaySem_attributes);
-
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -223,15 +219,17 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
 
-#ifdef  FLAT_VERSION
-   vLedInit(&htim2, &htim4, vDelaySemHandle, &hspi2, &htim3);
-#else
-   vLedInit(&htim2, &htim4, vDelaySemHandle, &hspi2);
-#endif
+
+   vLedInit(&htim2, &htim4, eSPIDelayHandle, &hspi2);
+
    vSetupKeyboard();
    vProceesInit();
    vCanOpenInit(&hcan);
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the event(s) */
+  /* creation of eSPIDelay */
+  eSPIDelayHandle = osEventFlagsNew(&eSPIDelay_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
