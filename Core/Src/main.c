@@ -176,10 +176,7 @@ int main(void)
   MX_USB_PCD_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-#ifdef  FLAT_VERSION
 
-  MX_TIM3_Init();
-#endif
   /* USER CODE END 2 */
 
   /* Init scheduler */
