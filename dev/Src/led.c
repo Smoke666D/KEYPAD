@@ -31,10 +31,7 @@ enum KEY_FSM
 	LED,
 };
 enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
-
 static TIM_HandleTypeDef * pwmtim		 = NULL;
-static TIM_HandleTypeDef * delaytim      = NULL;
-static EventGroupHandle_t  xSemaphore = NULL;
 void SetBackBrigth(uint8_t brigth);
 void BackBrigthON();
 void BackBrigthOFF();
@@ -42,10 +39,6 @@ uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
 void DrvLedSetState(uint8_t * state);
-
-static uint16_t us_delay=0;
-static uint16_t us_counter = 0;
-
 
 
 static uint8_t tbuf[3]={0,0,0};
@@ -67,44 +60,15 @@ void DrvLedSetState(uint8_t * state)
 }
 
 
-void vSTPDealyInterrupt()
-{
-	static portBASE_TYPE xHigherPriorityTaskWoken;
-	us_counter++;
-	if  (us_counter>= us_delay)
-	{
-	   us_counter = 0;
-	   xHigherPriorityTaskWoken = pdFALSE;
-	   xEventGroupSetBitsFromISR( xSemaphore,0x0001, &xHigherPriorityTaskWoken );
-	   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
-	}
-}
-
-
-void vSPTuSDealy(uint16_t Delay)
-{
-	us_delay = Delay;
-	HAL_TIM_Base_Start_IT(delaytim);
-	xEventGroupWaitBits( xSemaphore, 0x0001, pdTRUE,pdTRUE,100);
-	HAL_TIM_Base_Stop_IT(delaytim);
-}
 
 void vLatch()
 {
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-<<<<<<< HEAD
 	for (uint8_t i =0;i< 10;i++)
 	{
 	}
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-=======
-	//osDelay(1);
-	vSPTuSDealy(1);
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	//osDelay(1);
-	vSPTuSDealy(1);
-
->>>>>>> 2a533ee8c61eab1f690dc89aee2b3cfe7007ef8f
+	return;
 }
 
 uint8_t vSTPErrorDetection()
@@ -119,7 +83,7 @@ uint8_t vSTPErrorDetection()
 	 {
 
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-		 vSPTuSDealy(1);
+		 vTaskDelay(1);
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 		 switch (i)
 		 {
@@ -148,9 +112,9 @@ uint8_t vSTPErrorDetection()
 	 vLatch();
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); //OE Low
 	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-	 vSPTuSDealy(1);
+	 vTaskDelay(1);
 	 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	 vSPTuSDealy(1);
+	 vTaskDelay(1);
 	 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); //OE Low
 	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
@@ -158,14 +122,14 @@ uint8_t vSTPErrorDetection()
 	 for (uint8_t i =0;i<(3*8);i++)
 	 {
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-		 vSPTuSDealy(1);
+		 vTaskDelay(1);
 		 if ( HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_14) == GPIO_PIN_SET )
          {
 			 buf=buf<<1;
 			 buf |= 0x0001;
          }
 		 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-		 vSPTuSDealy(1);
+		 vTaskDelay(1);
 	 }
 	 if (buf == 0x0FFFFFF) {
 		 res = 0;
@@ -183,7 +147,7 @@ void vSTPNormalMode()
 	 {
 
 	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	    vSPTuSDealy(1);
+	    vTaskDelay(1);
 		HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 		switch (i)
 		{
@@ -202,12 +166,10 @@ void vSTPNormalMode()
 }
 
 
-void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, EventGroupHandle_t temp, SPI_HandleTypeDef* spi )
+void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleTypeDef* spi )
 {
 	pwmtim = htim;
-	delaytim = dtim;
 	LEDSpi = spi;
-	xSemaphore = temp;
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
@@ -246,6 +208,9 @@ void vLedDriverStart(void)
 }
 
 
+/*
+ * Функция включения светодиод
+ */
 void SetLedOn(uint8_t Color,uint8_t State)
 {
 
@@ -262,9 +227,9 @@ void SetLedOn(uint8_t Color,uint8_t State)
 		RegBusyFlag = RESET;
 	}
 	DrvLedSetState(&LED_ON[0]);
-
-
+	return 0;
 }
+
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
 
