@@ -34,7 +34,7 @@ enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
 
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static TIM_HandleTypeDef * delaytim      = NULL;
-static SemaphoreHandle_t  xSemaphore = NULL;
+static EventGroupHandle_t  xSemaphore = NULL;
 void SetBackBrigth(uint8_t brigth);
 void BackBrigthON();
 void BackBrigthOFF();
@@ -75,7 +75,7 @@ void vSTPDealyInterrupt()
 	{
 	   us_counter = 0;
 	   xHigherPriorityTaskWoken = pdFALSE;
-	   xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+	   xEventGroupSetBitsFromISR( xSemaphore,0x0001, &xHigherPriorityTaskWoken );
 	   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
 	}
 }
@@ -85,17 +85,26 @@ void vSPTuSDealy(uint16_t Delay)
 {
 	us_delay = Delay;
 	HAL_TIM_Base_Start_IT(delaytim);
-	xSemaphoreTake( xSemaphore, 1 );
+	xEventGroupWaitBits( xSemaphore, 0x0001, pdTRUE,pdTRUE,100);
 	HAL_TIM_Base_Stop_IT(delaytim);
 }
 
 void vLatch()
 {
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+<<<<<<< HEAD
 	for (uint8_t i =0;i< 10;i++)
 	{
 	}
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+=======
+	//osDelay(1);
+	vSPTuSDealy(1);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+	//osDelay(1);
+	vSPTuSDealy(1);
+
+>>>>>>> 2a533ee8c61eab1f690dc89aee2b3cfe7007ef8f
 }
 
 uint8_t vSTPErrorDetection()
@@ -193,7 +202,7 @@ void vSTPNormalMode()
 }
 
 
-void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi )
+void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, EventGroupHandle_t temp, SPI_HandleTypeDef* spi )
 {
 	pwmtim = htim;
 	delaytim = dtim;

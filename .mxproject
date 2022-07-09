@@ -9,6 +9,7 @@ CDefines=USE_HAL_DRIVER;STM32F103xB;USE_HAL_DRIVER;USE_HAL_DRIVER;
 [PreviousGenFiles]
 AdvancedFolderStructure=true
 HeaderFileListSize=4
+<<<<<<< HEAD
 HeaderFiles#0=..\Core\Inc\FreeRTOSConfig.h
 HeaderFiles#1=..\Core\Inc\stm32f1xx_it.h
 HeaderFiles#2=..\Core\Inc\stm32f1xx_hal_conf.h
@@ -24,5 +25,22 @@ SourceFiles#3=..\Core\Src\stm32f1xx_hal_timebase_tim.c
 SourceFiles#4=..\Core\Src\main.c
 SourceFolderListSize=1
 SourcePath#0=..\Core\Src
+=======
+HeaderFiles#0=D:/KEYPAD/Core/Inc/FreeRTOSConfig.h
+HeaderFiles#1=D:/KEYPAD/Core/Inc/stm32f1xx_it.h
+HeaderFiles#2=D:/KEYPAD/Core/Inc/stm32f1xx_hal_conf.h
+HeaderFiles#3=D:/KEYPAD/Core/Inc/main.h
+HeaderFolderListSize=1
+HeaderPath#0=D:/KEYPAD/Core/Inc
+HeaderFiles=;
+SourceFileListSize=5
+SourceFiles#0=D:/KEYPAD/Core/Src/freertos.c
+SourceFiles#1=D:/KEYPAD/Core/Src/stm32f1xx_it.c
+SourceFiles#2=D:/KEYPAD/Core/Src/stm32f1xx_hal_msp.c
+SourceFiles#3=D:/KEYPAD/Core/Src/stm32f1xx_hal_timebase_tim.c
+SourceFiles#4=D:/KEYPAD/Core/Src/main.c
+SourceFolderListSize=1
+SourcePath#0=D:/KEYPAD/Core/Src
+>>>>>>> 2a533ee8c61eab1f690dc89aee2b3cfe7007ef8f
 SourceFiles=;
 
