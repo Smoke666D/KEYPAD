@@ -21,8 +21,8 @@
 
 #define REG_SIZE      		9U
 
-#define VALID_CODE    0x56
-#define FLASH_SIZE 	0x08007FFFU
+#define VALID_CODE   	0x52
+#define FLASH_SIZE  	0x08007FFFU
 #define APP_ADDRESS    	0x08008000U
 
 

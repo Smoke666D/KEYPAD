@@ -48,15 +48,22 @@ static uint16_t us_counter = 0;
 
 
 
-
+static uint8_t tbuf[3]={0,0,0};
 void DrvLedSetState(uint8_t * state)
 {
 	uint8_t buf[3];
 	buf[0]=state[2];
 	buf[1]=state[1];
 	buf[2]=state[0];
-	HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
-	vLatch();
+	if ( (tbuf[0] != buf[0]) || (tbuf[1] != buf[1]) || (tbuf[2] != buf[2]) )
+	{
+		HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
+		vLatch();
+		tbuf[0] = buf[0];
+		tbuf[1] = buf[1];
+		tbuf[2] = buf[2];
+	}
+	return;
 }
 
 
@@ -84,14 +91,11 @@ void vSPTuSDealy(uint16_t Delay)
 
 void vLatch()
 {
-	//osDelay(1);//vSPTuSDealy(1);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	osDelay(1);
-	//vSPTuSDealy(1);
-	//vSPTuSDealy(100);
+	for (uint8_t i =0;i< 10;i++)
+	{
+	}
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	osDelay(1);//vSPTuSDealy(1);
-	//vSPTuSDealy(100);
 }
 
 uint8_t vSTPErrorDetection()
@@ -200,7 +204,6 @@ void vLedInit(TIM_HandleTypeDef * htim, TIM_HandleTypeDef * dtim, SemaphoreHandl
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
     SetBrigth(led_brigth );
-
 }
 
 
