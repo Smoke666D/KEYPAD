@@ -5,23 +5,21 @@
  *      Author: igor.dymov
  */
 #include "led.h"
+#include "math.h"
 
-
-
+#define MAX_BRIGTH_COUNTER MAX_BRIGTH*3
 
 uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_OFF[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
 
-static uint8_t backligch_brigth = 0x1F;
+static uint16_t backligch_brigth = 0x1F;
 static uint8_t backligth_color 	= 0U;
-static uint8_t blink_count 		= 0U;
-//static uint8_t RegBusyFlag 		= RESET;
-static uint8_t led_brigth 		= 0x3F;
+static uint16_t led_brigth 		= 0x3F;
 static uint8_t led_show_enable  = OFF;
 static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
-
+static uint8_t color_div =1;
 
 
 #ifdef  FLAT_VERSION
@@ -60,6 +58,15 @@ void DrvLedSetState(uint8_t * state)
 		tbuf[2] = buf[2];
 	}
 	return;
+}
+
+uint16_t calcBrigt(uint8_t pbr)
+{
+  uint16_t br = pbr;
+  uint16_t res;
+  if ( pbr > MAX_BRIGTH ) br = MAX_BRIGTH;
+  res = sin((float)br*(3.14/2.0)/MAX_BRIGTH)*(MAX_BRIGTH_COUNTER);
+  return res;
 }
 
 
@@ -166,6 +173,7 @@ void vSTPNormalMode()
 		    	break;
 		 }
 	 }
+	 return;
 }
 
 
@@ -174,10 +182,11 @@ void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleType
 	pwmtim = htim;
 	LEDSpi = spi;
 	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
-	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
-	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
+	led_brigth 		 = calcBrigt(vFDGetRegState(DEF_LED_BRIGTH_ADR));
+	backligch_brigth = calcBrigt(vFDGetRegState(DEF_BL_BRIGTH_ADR));
 	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
     SetBrigth(0x3F);
+    return;
 }
 
 
@@ -207,7 +216,7 @@ void vLedDriverStart(void)
 		led_show_enable = DISABLE;
 
     }
-
+	return;
 }
 
 
@@ -218,38 +227,31 @@ void SetLedOn(uint8_t Color,uint8_t State)
 {
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
 	{
-		RegBusyFlag = SET;
+
 		LED_ON[Color-1] = State;
-		RegBusyFlag = RESET;
+
 	}
-	return 0;
+	return;
 }
 
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
-
-	//DrvLedSetState(&LED_OFF[0]);
-	//if (KEYPAD_STATE != LED)
-	//{
-	//	KEYPAD_STATE = LED;
-//		SetLedBrigth(led_brigth);
-//	}
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
 	{
-		RegBusyFlag = SET;
 		LED_BLINK[Color-1] = State;
-		RegBusyFlag = RESET;
 	}
+	return;
 }
+
+
+
+
+
 
 void SetLedBrigth(uint8_t brigth)
 {
-	led_brigth = brigth;
-	//if (KEYPAD_STATE == LED)
-//	{
-//		SetBrigth(led_brigth);
-//	}
-
+	led_brigth = calcBrigt(brigth);
+	return;
 }
 
 void SetBackLigthColor(uint8_t color)
@@ -265,79 +267,64 @@ static uint8_t brigth_color[3] = {0,0,0};
 
 void SetBackLigth(uint8_t brigth)
 {
-
-//	KEYPAD_STATE = BACKLIGTH;
-	//SetBrigth(brigth );
-
 	switch (backligth_color)
 	{
 		case  RED:
-			red_period = 0;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0x00;
 			brigth_color[2]=0x00;
+			color_div =1;
 			break;
 		case GREEN:
-			green_period = 300;
 			brigth_color[0]=0x00;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
+			color_div =1;
 			break;
 		case BLUE:
-			blue_period = 200;
 			brigth_color[0]=0x00;
 			brigth_color[1]=0x00;
 			brigth_color[2]=0xFF;
+			color_div =1;
 			break;
 		case YELLOW:
-			red_period = 0;
-			green_period = 300;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
+			color_div =2;
 			break;
 		case YELLOW_GREEN:
-			red_period = 500;
-			green_period = 300;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
+			color_div =2;
 			break;
 		case  AMBER:
-			red_period = 0;
-			green_period = 700;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0x00;
+			color_div =2;
 			break;
 		case VIOLET:
-			red_period = 0;
-			green_period = 300;
-			blue_period = 200;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0x00;
 			brigth_color[2]=0xFF;
+			color_div =2;
 			break;
 		case CYAN:
-			red_period = 0;
-			green_period = 300;
-			blue_period = 200;
 			brigth_color[0]=0x00;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0xFF;
+			color_div =2;
 			break;
 		case WHITE:
-			red_period = 0;
-			green_period = 300;
-			blue_period = 200;
 			brigth_color[0]=0xFF;
 			brigth_color[1]=0xFF;
 			brigth_color[2]=0xFF;
+			color_div =2;
 			break;
 	}
-	//DrvLedSetState(&brigth_color[0]);
-	backligch_brigth = brigth;
-	//SetBrigth(brigth );
+	backligch_brigth =calcBrigt( brigth);
 }
 
 
@@ -357,12 +344,11 @@ void SetBrigth(uint8_t brigth)
 	if (brigth <= MAX_BRIGTH)
 	{
 
-		//if (KEYPAD_STATE != BACKLIGTH)
-		//{
-		//	red_period = 0;
-		//	green_period = 300;
-		//	blue_period = 200;
-		//}
+
+	 	red_period = 100;
+		green_period = 0;
+		blue_period =0;
+
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW ;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -386,35 +372,6 @@ void SetBrigth(uint8_t brigth)
 	}
 
 }
-
-uint8_t leds[3];
-
-void BlinkProcess()
-{
-	if ( (RegBusyFlag == RESET) &&  (( LED_BLINK[0] || LED_BLINK[1] || LED_BLINK[2] ) && (KEYPAD_STATE == LED) /*|| (blink_count == 1)*/) )
-	{
-		switch (blink_count)
-		{
-		  case 1:
-			 for (uint8_t i= 0;i<3;i++)
-			 {
-			 	leds[i] = LED_ON[i] & (~LED_BLINK[i]);
-			 }
-			 DrvLedSetState(&leds[0]);
-			 blink_count = 0;
-			 break;
-		  case 0:
-			 for (uint8_t i= 0;i<3;i++)
-			 {
-				 leds[i] = LED_ON[i] | LED_BLINK[i];
-			  }
-			  DrvLedSetState(&leds[0]);
-			  blink_count = 1;
-			  break;
-		}
-	}
-}
-
 
 void StartLEDShow(uint8_t show_type)
 {
@@ -455,14 +412,15 @@ void StartLEDShow(uint8_t show_type)
 		backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 }
 
-static uint8_t led_brigth_counter = 0;
+static uint16_t led_brigth_counter = 0;
 static uint8_t data[3]={0,0,0};
 static uint8_t old_data[3]={0,0,0};
+static uint8_t temp_led=0;
 void LedProcees()
 {
 
 	led_brigth_counter++;
-    if (led_brigth_counter>MAX_BRIGTH*2)
+    if (led_brigth_counter>MAX_BRIGTH_COUNTER)
     	led_brigth_counter = 0;
      old_data[0]=data[0];
      old_data[1]=data[2];
@@ -470,13 +428,14 @@ void LedProcees()
      data[0] =0;
      data[1] =0;
      data[2] =0;
-	 if (led_brigth_counter <= backligch_brigth*2)
+     temp_led = ~(LED_ON[0]  | LED_ON[1] | LED_ON[2] | LED_BLINK[0]| LED_BLINK[1]| LED_BLINK[2]);
+	 if (led_brigth_counter <= backligch_brigth/color_div)
 	 {
-		 data[0]=(brigth_color[0] & (~LED_ON[0]));
-	 	 data[1]=(brigth_color[1] & (~LED_ON[1]));
-	 	 data[2]=(brigth_color[2] & (~LED_ON[2]));
+		 data[0]=brigth_color[0] & temp_led;
+	 	 data[1]=brigth_color[1] & temp_led;
+	 	 data[2]=brigth_color[2] & temp_led;
  	 }
-	 if (led_brigth_counter <= led_brigth*2)
+	 if (led_brigth_counter <= led_brigth)
 	 {
 	 	data[0]|=LED_ON[0];
 	 	data[1]|=LED_ON[1];
