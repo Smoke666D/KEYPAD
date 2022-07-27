@@ -133,3 +133,8 @@ Debug/KEYPAD.list
 Debug/KEYPAD.map
 Debug/
 *.md
+*.stp
+*.igs
+*.step
+*.STEP
+*.docx

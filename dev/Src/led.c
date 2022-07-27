@@ -13,14 +13,17 @@ uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_OFF[3] 		=         { 0x00 , 0x00 , 0x00 };
 uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
 
-static uint8_t backligch_brigth = OFF;
+static uint8_t backligch_brigth = 0x1F;
 static uint8_t backligth_color 	= 0U;
 static uint8_t blink_count 		= 0U;
-static uint8_t RegBusyFlag 		= RESET;
-static uint8_t led_brigth 		= OFF;
+//static uint8_t RegBusyFlag 		= RESET;
+static uint8_t led_brigth 		= 0x3F;
 static uint8_t led_show_enable  = OFF;
 static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
+
+
+
 #ifdef  FLAT_VERSION
 static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
 static TIM_HandleTypeDef * backpwmtim		 = NULL;
@@ -174,7 +177,7 @@ void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleType
 	led_brigth 		 = vFDGetRegState(DEF_LED_BRIGTH_ADR);
 	backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
-    SetBrigth(led_brigth );
+    SetBrigth(0x3F);
 }
 
 
@@ -213,32 +216,24 @@ void vLedDriverStart(void)
  */
 void SetLedOn(uint8_t Color,uint8_t State)
 {
-
-	DrvLedSetState(&LED_OFF[0]);
-	if (KEYPAD_STATE != LED)
-	{
-		KEYPAD_STATE = LED;
-		SetLedBrigth(led_brigth);
-	}
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
 	{
 		RegBusyFlag = SET;
 		LED_ON[Color-1] = State;
 		RegBusyFlag = RESET;
 	}
-	DrvLedSetState(&LED_ON[0]);
 	return 0;
 }
 
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
 
-	DrvLedSetState(&LED_OFF[0]);
-	if (KEYPAD_STATE != LED)
-	{
-		KEYPAD_STATE = LED;
-		SetLedBrigth(led_brigth);
-	}
+	//DrvLedSetState(&LED_OFF[0]);
+	//if (KEYPAD_STATE != LED)
+	//{
+	//	KEYPAD_STATE = LED;
+//		SetLedBrigth(led_brigth);
+//	}
 	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
 	{
 		RegBusyFlag = SET;
@@ -250,10 +245,10 @@ void SetLedBlink(uint8_t Color,uint8_t State)
 void SetLedBrigth(uint8_t brigth)
 {
 	led_brigth = brigth;
-	if (KEYPAD_STATE == LED)
-	{
-		SetBrigth(led_brigth);
-	}
+	//if (KEYPAD_STATE == LED)
+//	{
+//		SetBrigth(led_brigth);
+//	}
 
 }
 
@@ -266,13 +261,14 @@ void SetBackLigthColor(uint8_t color)
 
 unsigned int red_period, green_period, blue_period;
 
+static uint8_t brigth_color[3] = {0,0,0};
 
 void SetBackLigth(uint8_t brigth)
 {
 
-	KEYPAD_STATE = BACKLIGTH;
+//	KEYPAD_STATE = BACKLIGTH;
 	//SetBrigth(brigth );
-	uint8_t brigth_color[3];
+
 	switch (backligth_color)
 	{
 		case  RED:
@@ -339,9 +335,9 @@ void SetBackLigth(uint8_t brigth)
 			brigth_color[2]=0xFF;
 			break;
 	}
-	DrvLedSetState(&brigth_color[0]);
+	//DrvLedSetState(&brigth_color[0]);
 	backligch_brigth = brigth;
-	SetBrigth(brigth );
+	//SetBrigth(brigth );
 }
 
 
@@ -361,12 +357,12 @@ void SetBrigth(uint8_t brigth)
 	if (brigth <= MAX_BRIGTH)
 	{
 
-		if (KEYPAD_STATE != BACKLIGTH)
-		{
-			red_period = 0;
-			green_period = 300;
-			blue_period = 200;
-		}
+		//if (KEYPAD_STATE != BACKLIGTH)
+		//{
+		//	red_period = 0;
+		//	green_period = 300;
+		//	blue_period = 200;
+		//}
 		sConfigOC.OCMode = TIM_OCMODE_PWM1;
 		sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW ;
 		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -459,6 +455,38 @@ void StartLEDShow(uint8_t show_type)
 		backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
 }
 
+static uint8_t led_brigth_counter = 0;
+static uint8_t data[3]={0,0,0};
+static uint8_t old_data[3]={0,0,0};
+void LedProcees()
+{
 
+	led_brigth_counter++;
+    if (led_brigth_counter>MAX_BRIGTH*2)
+    	led_brigth_counter = 0;
+     old_data[0]=data[0];
+     old_data[1]=data[2];
+     old_data[2]=data[3];
+     data[0] =0;
+     data[1] =0;
+     data[2] =0;
+	 if (led_brigth_counter <= backligch_brigth*2)
+	 {
+		 data[0]=(brigth_color[0] & (~LED_ON[0]));
+	 	 data[1]=(brigth_color[1] & (~LED_ON[1]));
+	 	 data[2]=(brigth_color[2] & (~LED_ON[2]));
+ 	 }
+	 if (led_brigth_counter <= led_brigth*2)
+	 {
+	 	data[0]|=LED_ON[0];
+	 	data[1]|=LED_ON[1];
+	 	data[2]|=LED_ON[2];
+
+	 }
+     if ((old_data[0]!=data[0]) || (old_data[1]!=data[1]) || (old_data[2]!=data[2]))
+     {
+    	 DrvLedSetState(&data[0]);
+     }
+}
 
 

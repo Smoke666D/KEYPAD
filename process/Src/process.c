@@ -276,51 +276,55 @@ void vProcessTask( void * argument )
 {
    uint8_t key_mask;
    uint8_t temp = 0,keys = 2;
+   uint8_t size = 0;
   // vLedDriverStart();
  //  StartLEDShow();
 	for(;;)
 	{
 		//Обработка событий от клавиатуры
-	    xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
-
-		switch (TempEvent.KeyCode)
+		vTaskDelay(1);
+		if ( uxQueueMessagesWaiting(pKeyboard) != 0)
 		{
-			   case kl1_key:
+			xQueueReceive( pKeyboard, &TempEvent,portMAX_DELAY );
+			switch (TempEvent.KeyCode)
+			{
+				case kl1_key:
 				   key_mask = K1;
 				   break;
-			   case kl2_key:
+				case kl2_key:
 				   key_mask = K2;
 			   	   break;
-			   case kl3_key:
+				case kl3_key:
 				   key_mask = K3;
 			   	   break;
-			   case kl4_key:
+				case kl4_key:
 				   key_mask = K4;
  			   	   break;
-			   case kl5_key:
+				case kl5_key:
 				   key_mask = K5;
    			   	   break;
-			   case kl6_key:
+				case kl6_key:
 				   key_mask = K6;
 			  	   break;
-			   case kl7_key:
+				case kl7_key:
 				   key_mask = K7;
 			   	   break;
-			   case kl8_key:
+				case kl8_key:
 				   key_mask = K8;
 			   	   break;
-			   default:
+				default:
 				   key_mask = 0U;
 				   break;
+			}
+			if ( TempEvent.Status == MAKECODE ) {
+				OD_RAM.x2000_digitalInputModuleKeysStates[0] |= key_mask;
+			}
+			else
+			{
+				OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
+			}
+			OD_requestTPDO(OD_KEY_flagsPDO,1);
 		}
-		if ( TempEvent.Status == MAKECODE ) {
-		   OD_RAM.x2000_digitalInputModuleKeysStates[0] |= key_mask;
-  		 }
-		 else {
-		   OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
-		 }
-
-		 OD_requestTPDO(OD_KEY_flagsPDO,1);
 
 	}
 }
