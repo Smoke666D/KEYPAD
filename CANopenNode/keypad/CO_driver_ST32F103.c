@@ -192,16 +192,31 @@ CO_ReturnError_t CO_CANmodule_init(
         sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
         sFilterConfig.FilterBank =0;
         sFilterConfig.FilterFIFOAssignment =0;
-        sFilterConfig.FilterIdHigh =0xFFFF;
-        sFilterConfig.FilterMaskIdLow = 0;
-        sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+        sFilterConfig.FilterIdLow		 = ( 0x180 | vGetNodeId() ) <<5;
+        sFilterConfig.FilterIdHigh 		 = ( 0x200 | vGetNodeId() ) <<5;
+        sFilterConfig.FilterMaskIdLow	 = ( 0x300 | vGetNodeId() ) <<5;
+        sFilterConfig.FilterMaskIdHigh   = ( 0x400 | vGetNodeId() ) <<5;
+        sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST ;
         sFilterConfig.FilterScale =CAN_FILTERSCALE_16BIT;
         sFilterConfig.SlaveStartFilterBank = 0;
 
-        if (HAL_CAN_ConfigFilter(hcan, &sFilterConfig) != HAL_OK)
-        {
-            Error_Handler();
-        }
+        HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
+
+       sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
+       sFilterConfig.FilterBank =1;
+       sFilterConfig.FilterFIFOAssignment =1;
+       sFilterConfig.FilterIdLow = ( 0x500 | vGetNodeId() )<<5;
+       sFilterConfig.FilterIdHigh =( 0x600 | vGetNodeId() )<<5;
+       sFilterConfig.FilterMaskIdLow = 0;
+       sFilterConfig.FilterMaskIdHigh =0;
+       sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+       sFilterConfig.FilterScale =CAN_FILTERSCALE_16BIT;
+       sFilterConfig.SlaveStartFilterBank = 0;
+
+       HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
+
+
+
 
         if (HAL_CAN_Init(hcan) != HAL_OK)
         {
