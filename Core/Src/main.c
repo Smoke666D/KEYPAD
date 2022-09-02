@@ -31,7 +31,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
-typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -60,23 +59,38 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
+uint32_t defaultTaskBuffer[ 128 ];
+osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .cb_mem = &defaultTaskControlBlock,
+  .cb_size = sizeof(defaultTaskControlBlock),
+  .stack_mem = &defaultTaskBuffer[0],
+  .stack_size = sizeof(defaultTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for KeyboardTask */
 osThreadId_t KeyboardTaskHandle;
+uint32_t KeyboardTaskBuffer[ 128 ];
+osStaticThreadDef_t KeyboardTaskControlBlock;
 const osThreadAttr_t KeyboardTask_attributes = {
   .name = "KeyboardTask",
-  .stack_size = 128 * 4,
+  .cb_mem = &KeyboardTaskControlBlock,
+  .cb_size = sizeof(KeyboardTaskControlBlock),
+  .stack_mem = &KeyboardTaskBuffer[0],
+  .stack_size = sizeof(KeyboardTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for ProcessTask */
 osThreadId_t ProcessTaskHandle;
+uint32_t ProcessTaskBuffer[ 128 ];
+osStaticThreadDef_t ProcessTaskControlBlock;
 const osThreadAttr_t ProcessTask_attributes = {
   .name = "ProcessTask",
-  .stack_size = 128 * 4,
+  .cb_mem = &ProcessTaskControlBlock,
+  .cb_size = sizeof(ProcessTaskControlBlock),
+  .stack_mem = &ProcessTaskBuffer[0],
+  .stack_size = sizeof(ProcessTaskBuffer),
   .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for CanOpenPeriodic */
@@ -102,14 +116,6 @@ const osThreadAttr_t CanOpenProcess_attributes = {
   .stack_mem = &CanOpenProcessBuffer[0],
   .stack_size = sizeof(CanOpenProcessBuffer),
   .priority = (osPriority_t) osPriorityNormal1,
-};
-/* Definitions for eSPIDelay */
-osEventFlagsId_t eSPIDelayHandle;
-osStaticEventGroupDef_t eSPIDelayControlBlock;
-const osEventFlagsAttr_t eSPIDelay_attributes = {
-  .name = "eSPIDelay",
-  .cb_mem = &eSPIDelayControlBlock,
-  .cb_size = sizeof(eSPIDelayControlBlock),
 };
 /* USER CODE BEGIN PV */
 
@@ -220,17 +226,13 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
 
 
-   vLedInit(&htim2, eSPIDelayHandle, &hspi2);
+   vLedInit(&htim2, &hspi2);
 
    vSetupKeyboard();
    vProceesInit();
    vCanOpenInit(&hcan);
    HAL_TIM_Base_Start_IT(&htim4);
   /* USER CODE END RTOS_THREADS */
-
-  /* Create the event(s) */
-  /* creation of eSPIDelay */
-  eSPIDelayHandle = osEventFlagsNew(&eSPIDelay_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -539,7 +541,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 6;
+  htim4.Init.Prescaler = 2;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 800;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

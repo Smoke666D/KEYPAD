@@ -26,10 +26,9 @@
 #define  MAX_BRIGTH 0x3F
 #define OFF 0x00
 
-
-//	#define RED_COLOR 	1U
-//	#define GREEN_COLOR 2U
-	//#define BLUE_COLOR  3U
+#define LATCH_DEALY 	10U
+#define SPI_PACKET_SIZE 3U
+#define SPI_TIMEOUT		100U
 
 	#define RED_COLOR 	1U
 	#define GREEN_COLOR 2U
@@ -58,37 +57,14 @@
 #define FULL_SHOW  0x01
 #define FLASH_SHOW 0x02
 
-typedef enum
-{
-	LED_LIGTH,
-	BACK_LIGTH,
-} LED_STATUS_TYPE;
-
-typedef struct __packed
-{
-  uint8_t brigth;
-  uint8_t color;
-  LED_STATUS_TYPE staus;
-} xLEDData;
-
-typedef struct __packed
-{
-  unsigned char command;
-  unsigned char data;
-} xLEDEvent;
-void vLedDriverStart(void);
 void SetBackLigthColor(uint8_t color);
 void SetLedBrigth(uint8_t brigth);
 void SetLedOn(uint8_t Color,uint8_t State);
 void SetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
-
-void vLedInit(TIM_HandleTypeDef * htim, SemaphoreHandle_t temp, SPI_HandleTypeDef* spi );
-
-
+void vLedInit(TIM_HandleTypeDef * htim, SPI_HandleTypeDef* spi );
 void vLedProcess(void *argument);
 void SetBackLigth(uint8_t brigth);
-void vLatch( void );
 void vSPTuSDealy(uint16_t Delay);
 void StartLEDShow(uint8_t show_type);
 void LedProcees();

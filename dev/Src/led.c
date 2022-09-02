@@ -9,9 +9,8 @@
 
 #define MAX_BRIGTH_COUNTER MAX_BRIGTH*3
 
-uint8_t LED_ON[3] 		=         { 0x00 , 0x00 , 0x00 };
-uint8_t LED_OFF[3] 		=         { 0x00 , 0x00 , 0x00 };
-uint8_t LED_BLINK[3] 	=         { 0x00 , 0x00 , 0x00 };
+uint8_t LED_ON[SPI_PACKET_SIZE] 		=         { 0x00 , 0x00 , 0x00 };
+uint8_t LED_BLINK[SPI_PACKET_SIZE]    	=         { 0x00 , 0x00 , 0x00 };
 
 static uint16_t backligch_brigth = 0x1F;
 static uint8_t backligth_color 	= 0U;
@@ -21,17 +20,6 @@ static uint8_t startup_backligth =0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
 static uint8_t color_div =1;
 
-
-#ifdef  FLAT_VERSION
-static uint8_t brigth_color[3]=  { 0x00 , 0x00 , 0x00 };
-static TIM_HandleTypeDef * backpwmtim		 = NULL;
-#endif
-enum KEY_FSM
-{
-	BACKLIGTH,
-	LED,
-};
-enum KEY_FSM KEYPAD_STATE = BACKLIGTH;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 void SetBackBrigth(uint8_t brigth);
 void BackBrigthON();
@@ -40,11 +28,23 @@ uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
 
-
-
-static void DrvLedSetState(uint8_t * state)
+/*
+ * Защелка данных в буферах
+ * Поскольку длителность импульса мала, не целесобразно делать задержку через что-то, кроме пустого цикла
+ */
+static void vLatch( void )
 {
-	HAL_SPI_Transmit(LEDSpi,&state[0],3,100);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+	for (uint8_t i = 0U; i < LATCH_DEALY; i++);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+	return;
+}
+/*
+ *
+ */
+static void vDrvLedSetState(uint8_t * state)
+{
+	HAL_SPI_Transmit(LEDSpi,&state[0U], SPI_PACKET_SIZE, SPI_TIMEOUT );
 	vLatch();
 	return;
 }
@@ -52,32 +52,22 @@ static void DrvLedSetState(uint8_t * state)
 uint16_t calcBrigt(uint8_t pbr)
 {
   uint16_t br = pbr;
-  uint16_t res;
   if ( pbr > MAX_BRIGTH ) br = MAX_BRIGTH;
-  res = sin((float)br*(3.14/2.0)/MAX_BRIGTH)*(MAX_BRIGTH_COUNTER);
-  return res;
+  return ( sin((float)br*(3.14/2.0)/MAX_BRIGTH)*(MAX_BRIGTH_COUNTER) );
 }
 
 
 
-void vLatch()
-{
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	for (uint8_t i =0;i< 10;i++)
-	{
-	}
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	return;
-}
+
 
 uint8_t vSTPErrorDetection()
 {
 	 uint8_t res = 1;
-	// Входим в режим Detectiom
+	/*Входим в режим Detectiom*/
 
-	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); //OE High
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); /*OE High*/
 	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-	 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  //LE low
+	 HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  /*LE low*/
 	 for (uint8_t i=0;i<(5+8*3);i++)
 	 {
 
@@ -87,18 +77,18 @@ uint8_t vSTPErrorDetection()
 		 switch (i)
 		 {
 		    case 0:
-		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); //OE Low
+		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); /*OE Low*/
 		    	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 		    	break;
 		    case 1:
-		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); //OE High
+		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); /*OE High*/
 		    	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 		    	break;
 		    case 2:
-		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  //LE High
+		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  /*LE High*/
 		    	break;
 		    case 3:
-		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  //LE low
+		    	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);  /*LE low*/
 		    	break;
 		    case 4:
 		    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
@@ -133,7 +123,7 @@ uint8_t vSTPErrorDetection()
 	 if (buf == 0x0FFFFFF) {
 		 res = 0;
 	 }
-	 return res;
+	 return ( res );
 }
 
 
@@ -166,7 +156,7 @@ void vSTPNormalMode()
 }
 
 
-void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleTypeDef* spi )
+void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi )
 {
 	pwmtim = htim;
 	LEDSpi = spi;
@@ -174,7 +164,7 @@ void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleType
 	led_brigth 		 = calcBrigt(vFDGetRegState(DEF_LED_BRIGTH_ADR));
 	backligch_brigth = calcBrigt(vFDGetRegState(DEF_BL_BRIGTH_ADR));
 	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
-    SetBrigth(0x3F);
+    SetBrigth(MAX_BRIGTH);
     return;
 }
 
@@ -182,7 +172,7 @@ void vLedInit(TIM_HandleTypeDef * htim,  EventGroupHandle_t temp, SPI_HandleType
 void vLedDriverStart(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	//Выключем SPI и переиницилизируем порты на GPIO
+	/*Выключем SPI и переиницилизируем порты на GPIO*/
 	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
 	GPIO_InitStruct.Speed =  GPIO_SPEED_FREQ_HIGH ;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -196,7 +186,7 @@ void vLedDriverStart(void)
 	}
 
 	SetBackLigth(0);
-	DrvLedSetState(&LED_ON[0]);
+	vDrvLedSetState(&LED_ON[0]);
 	HAL_TIM_MspPostInit(pwmtim);
 
 	if (led_show_enable!=DISABLE)
@@ -214,7 +204,7 @@ void vLedDriverStart(void)
  */
 void SetLedOn(uint8_t Color,uint8_t State)
 {
-	//if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
+	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
 	{
 		LED_ON[Color-1] = State;
 	}
@@ -223,7 +213,7 @@ void SetLedOn(uint8_t Color,uint8_t State)
 
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
-	//if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
+	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
 	{
 		LED_BLINK[Color-1] = State;
 	}
@@ -400,11 +390,12 @@ void StartLEDShow(uint8_t show_type)
 }
 
 static uint16_t led_brigth_counter = 0;
-static uint8_t data[3]={0,0,0};
-static uint8_t temp_led=0;
+
 
 void LedProcees()
 {
+	uint8_t data[3];
+	uint8_t temp_led;
 	led_brigth_counter++;
      if (led_brigth_counter>MAX_BRIGTH_COUNTER)
      {
@@ -428,7 +419,8 @@ void LedProcees()
 	 	data[0]|=LED_ON[2];
 
 	 }
-     DrvLedSetState(&data[0]);
+     vDrvLedSetState(&data[0]);
+     return;
 }
 
 
