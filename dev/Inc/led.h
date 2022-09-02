@@ -31,9 +31,9 @@
 //	#define GREEN_COLOR 2U
 	//#define BLUE_COLOR  3U
 
-	#define RED_COLOR 	3U
+	#define RED_COLOR 	1U
 	#define GREEN_COLOR 2U
-	#define BLUE_COLOR  1U
+	#define BLUE_COLOR  3U
 
 
 #define RED		     0x01

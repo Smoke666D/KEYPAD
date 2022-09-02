@@ -39,24 +39,13 @@ void BackBrigthOFF();
 uint8_t vSTPErrorDetection();
 void vSTPNormalMode();
 HAL_StatusTypeDef SPI_Transmit_DMA (uint8_t *pData, uint16_t size );
-void DrvLedSetState(uint8_t * state);
 
 
-static uint8_t tbuf[3]={0,0,0};
-void DrvLedSetState(uint8_t * state)
+
+static void DrvLedSetState(uint8_t * state)
 {
-	uint8_t buf[3];
-	buf[0]=state[2];
-	buf[1]=state[1];
-	buf[2]=state[0];
-	if ( (tbuf[0] != buf[0]) || (tbuf[1] != buf[1]) || (tbuf[2] != buf[2]) )
-	{
-		HAL_SPI_Transmit(LEDSpi,&buf[0],3,100);
-		vLatch();
-		tbuf[0] = buf[0];
-		tbuf[1] = buf[1];
-		tbuf[2] = buf[2];
-	}
+	HAL_SPI_Transmit(LEDSpi,&state[0],3,100);
+	vLatch();
 	return;
 }
 
@@ -225,18 +214,16 @@ void vLedDriverStart(void)
  */
 void SetLedOn(uint8_t Color,uint8_t State)
 {
-	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
+	//if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
 	{
-
 		LED_ON[Color-1] = State;
-
 	}
 	return;
 }
 
 void SetLedBlink(uint8_t Color,uint8_t State)
 {
-	if ((Color <=RED_COLOR) && (Color >=BLUE_COLOR))
+	//if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
 	{
 		LED_BLINK[Color-1] = State;
 	}
@@ -414,38 +401,34 @@ void StartLEDShow(uint8_t show_type)
 
 static uint16_t led_brigth_counter = 0;
 static uint8_t data[3]={0,0,0};
-static uint8_t old_data[3]={0,0,0};
 static uint8_t temp_led=0;
+
 void LedProcees()
 {
-
 	led_brigth_counter++;
-    if (led_brigth_counter>MAX_BRIGTH_COUNTER)
+     if (led_brigth_counter>MAX_BRIGTH_COUNTER)
+     {
     	led_brigth_counter = 0;
-     old_data[0]=data[0];
-     old_data[1]=data[2];
-     old_data[2]=data[3];
+
+     }
      data[0] =0;
      data[1] =0;
      data[2] =0;
      temp_led = ~(LED_ON[0]  | LED_ON[1] | LED_ON[2] | LED_BLINK[0]| LED_BLINK[1]| LED_BLINK[2]);
-	 if (led_brigth_counter <= backligch_brigth/color_div)
+	 if (led_brigth_counter < backligch_brigth/color_div)
 	 {
-		 data[0]=brigth_color[0] & temp_led;
+		 data[2]=brigth_color[0] & temp_led;
 	 	 data[1]=brigth_color[1] & temp_led;
-	 	 data[2]=brigth_color[2] & temp_led;
+	 	 data[0]=brigth_color[2] & temp_led;
  	 }
 	 if (led_brigth_counter <= led_brigth)
 	 {
-	 	data[0]|=LED_ON[0];
+	 	data[2]|=LED_ON[0];
 	 	data[1]|=LED_ON[1];
-	 	data[2]|=LED_ON[2];
+	 	data[0]|=LED_ON[2];
 
 	 }
-     if ((old_data[0]!=data[0]) || (old_data[1]!=data[1]) || (old_data[2]!=data[2]))
-     {
-    	 DrvLedSetState(&data[0]);
-     }
+     DrvLedSetState(&data[0]);
 }
 
 

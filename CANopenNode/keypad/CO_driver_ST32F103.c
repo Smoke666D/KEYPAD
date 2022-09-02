@@ -523,11 +523,16 @@ static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
     uint8_t messageFound = 0;
 
     /* Read received message from FIFO */
+    rx.ExtId = 0;
+    rx.StdId = 0;
     if (HAL_CAN_GetRxMessage(can, fifo, &rx, rcvMsg.data) != HAL_OK)
     {
         return;
     }
-
+    if (rx.ExtId != 0)
+    {
+    	return;
+    }
     /* Setup identifier (with RTR) and length */
     rcvMsg.ident = rx.StdId  | (rx.RTR == CAN_RTR_REMOTE ? FLAG_RTR : 0x00);
     rcvMsg.dlc = rx.DLC;
