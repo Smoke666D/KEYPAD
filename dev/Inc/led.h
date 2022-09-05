@@ -22,9 +22,9 @@
 
 #define BUTTON_COUNT 8
 
-
 #define  MAX_BRIGTH 0x3F
-#define OFF 0x00
+#define  MAX_BRIGTH_COUNTER MAX_BRIGTH *3
+#define  OFF 0x00
 
 #define LATCH_DEALY 	10U
 #define SPI_PACKET_SIZE 3U
@@ -59,12 +59,12 @@
 
 void SetBackLigthColor(uint8_t color);
 void SetLedBrigth(uint8_t brigth);
-void SetLedOn(uint8_t Color,uint8_t State);
-void SetLedBlink(uint8_t Color,uint8_t State);
+void vSetLedOn(uint8_t Color,uint8_t State);
+void vSetLedBlink(uint8_t Color,uint8_t State);
 void SetBrigth(uint8_t brigth);
 void vLedInit(TIM_HandleTypeDef * htim, SPI_HandleTypeDef* spi );
 void vLedProcess(void *argument);
-void SetBackLigth(uint8_t brigth);
+void vSetBackLigth(uint8_t brigth);
 void vSPTuSDealy(uint16_t Delay);
 void StartLEDShow(uint8_t show_type);
 void LedProcees();

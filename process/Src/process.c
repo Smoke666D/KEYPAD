@@ -11,13 +11,13 @@
 static QueueHandle_t     pKeyboard        = NULL;
 static KeyEvent          TempEvent        = { 0U };
 
-static ODR_t OD_writeLed(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeBlink(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeNode(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeBITRATE(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeNMT(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
-static ODR_t OD_writeLEDShow(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeLed(OD_stream_t *stream,const  void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeBlink(OD_stream_t *stream,const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeBRIGTH(OD_stream_t *stream,const void *buf,OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeNode(OD_stream_t *stream,const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeBITRATE(OD_stream_t *stream,const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeNMT(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeLEDShow(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten);
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
@@ -88,139 +88,129 @@ void vProceesInit( void)
 }
 
 
-ODR_t OD_writeLEDShow(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countWritten)
+ODR_t OD_writeLEDShow(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten)
 {
-	uint8_t temp;
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-			return  ODR_DEV_INCOMPAT;
-		}
-		else {
-
-			switch (CO_getUint8(buf))
-			{
-		    	case DISABLE:
-		    	case FULL_SHOW:
-		    	case FLASH_SHOW:
-		    		vFDSetRegState( LED_SHOW_ADRRES , CO_getUint8(buf) );
-		    		return ODR_OK;
-		    	break;
-		    	default:
-		    		return ODR_INVALID_VALUE;
-			}
-		 }
-
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+		return ( ODR_DEV_INCOMPAT );
+	}
+	switch (CO_getUint8(buf))
+	{
+    	case DISABLE:
+    	case FULL_SHOW:
+    	case FLASH_SHOW:
+    		vFDSetRegState( LED_SHOW_ADRRES , CO_getUint8(buf) );
+		    break;
+		default:
+			return ( ODR_INVALID_VALUE );
+	}
+	return ( ODR_OK );
 }
-
-
 /*
  * Callback функция записи в oбъект 2012. Принимает 2 значения, в активном NTM состояние после стратна OPERATIONAL, в не активном PRE_OPERATIONAL
  */
-ODR_t OD_writeNMT(OD_stream_t *stream, void *buf,
-                      OD_size_t count, OD_size_t *countWritten)
+ODR_t OD_writeNMT(OD_stream_t *stream,const void *buf,  OD_size_t count, OD_size_t *countWritten)
 {
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-		return  ODR_DEV_INCOMPAT;
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+		return  ( ODR_DEV_INCOMPAT );
 	}
-	else {
-		switch (CO_getUint8(buf)) {
-	    	case ACTIVE:
-	    	case NOT_ACTIVE:
-	    		vFDSetRegState( NMT_STATE_ADR , CO_getUint8(buf) );
-	    		return ODR_OK;
+	switch (CO_getUint8(buf))
+	{
+	    case ACTIVE:
+	    case NOT_ACTIVE:
+	    	vFDSetRegState( NMT_STATE_ADR , CO_getUint8(buf) );
 	    	break;
-	    	default:
-	    		return ODR_INVALID_VALUE;
-		}
-	 }
+	    default:
+	    	return ( ODR_INVALID_VALUE );
+	}
+	return ( ODR_OK );
 }
 /*
  * 	Callback функция записи в oбъект 2013. Node Id. Принимает значения от 1 до 7F
  */
-ODR_t OD_writeNode(OD_stream_t *stream, void *buf,
-                      OD_size_t count, OD_size_t *countWritten)
+ODR_t OD_writeNode(OD_stream_t *stream,const  void *buf, OD_size_t count, OD_size_t *countWritten)
 {
 	if (stream == NULL || buf == NULL || countWritten == NULL) {
-		return  ODR_DEV_INCOMPAT;
+		return (  ODR_DEV_INCOMPAT );
 	}
-	if ( ( CO_getUint8(buf) >= MIN_NODE_ID ) && ( CO_getUint8(buf) <= MAX_NODE_ID ) ) {
+	if ( ( CO_getUint8(buf) >= MIN_NODE_ID ) && ( CO_getUint8(buf) <= MAX_NODE_ID ) )
+	{
 		vFDSetRegState( NODE_ID_ADR , CO_getUint8(buf) );
-		return ODR_OK;
 	}
-	 else {
-	     return ODR_INVALID_VALUE;
-	 }
+	else
+	{
+	    return ( ODR_INVALID_VALUE );
+	}
+	return ( ODR_OK );
 }
 
 /*
  * 	Callback функция записи в oбъект 2010. Скорость CAN. Принимает значения от 0 до 7
  */
-ODR_t OD_writeBITRATE(OD_stream_t *stream, void *buf,
+ODR_t OD_writeBITRATE(OD_stream_t *stream,const  void *buf,
                       OD_size_t count, OD_size_t *countWritten)
 {
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-		return  ODR_DEV_INCOMPAT;;
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+		return  ( ODR_DEV_INCOMPAT );
 	}
-	if ( ( CO_getUint8(buf) >= MIN_BITRATE) && ( CO_getUint8(buf) <= MAX_BITRATE ) ) {
+	if  ( CO_getUint8(buf) <= MAX_BITRATE )
+	{
 		 vFDSetRegState( BITRATE_ADR  , CO_getUint8(buf) );
-		 return ODR_OK;
 	}
 	else {
-	     return ODR_INVALID_VALUE;
+	     return ( ODR_INVALID_VALUE );
 	}
+	return ( ODR_OK );
+}
+/*
+ *
+ */
+ODR_t OD_writeLed(OD_stream_t *stream,const  void *buf, OD_size_t count, OD_size_t *countWritten)
+{
+
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+		return ( ODR_DEV_INCOMPAT );
+	}
+	if ((stream->subIndex >=RED_COLOR) && (stream->subIndex <=BLUE_COLOR))
+	{
+		vSetLedOn(stream->subIndex,CO_getUint8(buf));
+	}
+	else
+	{
+    	return ( ODR_SUB_NOT_EXIST );
+	}
+	return ( OD_writeOriginal(stream, buf, count, countWritten) );
 }
 
-ODR_t OD_writeLed(OD_stream_t *stream, void *buf,
+ODR_t OD_writeBlink(OD_stream_t *stream,const  void *buf,
                       OD_size_t count, OD_size_t *countWritten)
 {
 
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-	        return ODR_DEV_INCOMPAT;
-	    }
-	    switch (stream->subIndex) {
-	        case RED_COLOR :
-	        	SetLedOn(RED_COLOR,CO_getUint8(buf));
-	        	break;
-	        case GREEN_COLOR:
-	        	SetLedOn(GREEN_COLOR,CO_getUint8(buf));
-	        	break;
-	        case BLUE_COLOR :
-	        	SetLedOn(BLUE_COLOR,CO_getUint8(buf));
-	        	break;
-	        default:
-	        	return ODR_SUB_NOT_EXIST;
-	     }
-	    return OD_writeOriginal(stream, buf, count, countWritten);
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+	        return ( ODR_DEV_INCOMPAT );
+	}
+	if ((stream->subIndex >=RED_COLOR) && (stream->subIndex <=BLUE_COLOR))
+	{
+		vSetLedBlink(stream->subIndex ,CO_getUint8(buf));
+	}
+	else
+	{
+	    	return ( ODR_SUB_NOT_EXIST );
+	}
+	return ( OD_writeOriginal(stream, buf, count, countWritten) );
 }
 
-ODR_t OD_writeBlink(OD_stream_t *stream, void *buf,
+ODR_t OD_writeBRIGTH(OD_stream_t *stream,const void *buf,
                       OD_size_t count, OD_size_t *countWritten)
 {
 
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-	        return ODR_DEV_INCOMPAT;
-	    }
-	    switch (stream->subIndex) {
-	        case RED_COLOR :
-	        	SetLedBlink(RED_COLOR,CO_getUint8(buf));
-	        	break;
-	        case GREEN_COLOR:
-	        	SetLedBlink(GREEN_COLOR,CO_getUint8(buf));
-	        	break;
-	        case BLUE_COLOR :
-	        	SetLedBlink(BLUE_COLOR,CO_getUint8(buf));
-	        	break;
-	        default:
-	        	return ODR_SUB_NOT_EXIST;
-	     }
-	    return OD_writeOriginal(stream, buf, count, countWritten);
-}
-
-ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
-                      OD_size_t count, OD_size_t *countWritten)
-{
-
-	if (stream == NULL || buf == NULL || countWritten == NULL) {
-	        return ODR_DEV_INCOMPAT;
+	if (stream == NULL || buf == NULL || countWritten == NULL)
+	{
+        return ( ODR_DEV_INCOMPAT );
 	}
 
 
@@ -232,7 +222,7 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
        		    	SetLedBrigth(CO_getUint8(buf));
        		    	break;
        		    case 2U:
-       		    	SetBackLigth(CO_getUint8(buf));
+       		    	vSetBackLigth(CO_getUint8(buf));
        		    	break;
        		    case 5U:
        		    	vFDSetRegState( DEF_LED_BRIGTH_ADR , CO_getUint8(buf) );
@@ -243,7 +233,7 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
        		}
        	}
        	else {
-       		return ODR_INVALID_VALUE;
+       		return ( ODR_INVALID_VALUE );
       	}
      }
 
@@ -260,28 +250,26 @@ ODR_t OD_writeBRIGTH(OD_stream_t *stream, void *buf,
        		}
        	}
        	else {
-       		return  ODR_INVALID_VALUE;
+       		return ( ODR_INVALID_VALUE );
        	}
      }
-     else {
-    	  return  ODR_SUB_NOT_EXIST;
+     else
+     {
+    	  return ( ODR_SUB_NOT_EXIST );
      }
 
-     return ODR_OK;
+     return ( ODR_OK );
 }
 
-
-
+/*
+ *
+ */
 void vProcessTask( void * argument )
 {
-   uint8_t key_mask;
-   uint8_t temp = 0,keys = 2;
-   uint8_t size = 0;
-  // vLedDriverStart();
- //  StartLEDShow();
+    uint8_t key_mask;
 	for(;;)
 	{
-		//Обработка событий от клавиатуры
+		/*Обработка событий от клавиатуры*/
 		vTaskDelay(1);
 		if ( uxQueueMessagesWaiting(pKeyboard) != 0)
 		{
@@ -328,9 +316,4 @@ void vProcessTask( void * argument )
 
 	}
 }
-
-
-
-
-
 

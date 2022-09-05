@@ -25,9 +25,7 @@ static EventGroupHandle_t pxKeyStatusFLag;
 static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
 static unsigned char CODES[KEYBOARD_COUNT]                      = { kl1_key, kl2_key, kl3_key, kl4_key ,kl5_key, kl6_key,kl7_key, kl8_key };
-#if (USE_KEY_TIME_OUT == 1)
-	static unsigned long KeyNorPressTimeOut                         = 0U;
-#endif
+
 
 uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
@@ -81,28 +79,26 @@ void vKeyboardTask( void * argument )
     }
     for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Анализируем клавиутру */
     {
-      //Если текущие состояние порта ВЫКЛ, а предидущие состояние было ВКЛ,
-	  //Фиксируем отжатие клавищи (BRAKECODE)
+      /*Если текущие состояние порта ВЫКЛ, а предидущие состояние было ВКЛ,
+	  Фиксируем отжатие клавищи (BRAKECODE)*/
       if ( STATUS[i] && ( TK[i] == KEY_OFF_STATE ) )
       {
-        STATUS[i]      = KEY_OFF; //Состоянии клавиши ВЫКЛ
-        COUNTERS[i]    = 0U;      //Сбрасываем счетчик
+        STATUS[i]      = KEY_OFF; /*Состоянии клавиши ВЫКЛ*/
+        COUNTERS[i]    = 0U;      /*Сбрасываем счетчик*/
         TEvent.KeyCode = CODES[i];
         TEvent.Status  = BRAKECODE;
         xQueueReset( pKeyboardQueue );
         xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-		#if (USE_KEY_TIME_OUT == 1)
-        	KeyNorPressTimeOut = 0U;
-		#endif
+
       }
       else
       {
-        //Если текущие состояние потрта ВКЛ, а предидущие было ВЫКЛ
-        //то запускаме счеткик нажатий
+        /*Если текущие состояние потрта ВКЛ, а предидущие было ВЫКЛ
+        //то запускаме счеткик нажатий*/
         if ( !STATUS[i] && ( TK[i] == KEY_ON_STATE ) )
         {
           COUNTERS[i]++;
-          //если счетчик превысил значение SWITCHONDELAY то фиксируем нажатие
+          /*если счетчик превысил значение SWITCHONDELAY то фиксируем нажатие*/
           if ( COUNTERS[i] >= ( SWITCHONDELAY / KEY_PEREOD ) )
           {
             COUNTERS[i]    = 0U;
@@ -110,9 +106,7 @@ void vKeyboardTask( void * argument )
             TEvent.KeyCode = CODES[i];
             TEvent.Status  = MAKECODE;
             xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-			#if (USE_KEY_TIME_OUT == 1)
-            	KeyNorPressTimeOut = 0U;
-			#endif
+
           }
         }
         else if ( STATUS[i] && ( TK[i] == KEY_ON_STATE ) )
@@ -123,14 +117,12 @@ void vKeyboardTask( void * argument )
             case KEY_ON:
               if ( COUNTERS[i] >= ( DefaultDelay / KEY_PEREOD ) )
               {
-                STATUS[i]      = KEY_ON_REPEAT;   //?????? ????? ???????
-                COUNTERS[i]    = 0U; //?????????? ???????
+                STATUS[i]      = KEY_ON_REPEAT;
+                COUNTERS[i]    = 0U;
                 TEvent.KeyCode = CODES[i];
                 TEvent.Status  = MAKECODE;
-                xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );             //?????????? MAKE CODR
-				#if (USE_KEY_TIME_OUT == 1)
-                	KeyNorPressTimeOut = 0U;
-				#endif
+                xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
+
               }
               break;
             case KEY_ON_REPEAT:
@@ -140,9 +132,7 @@ void vKeyboardTask( void * argument )
                 TEvent.KeyCode = CODES[i];
                 TEvent.Status  = MAKECODE;
                 xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-                #if (USE_KEY_TIME_OUT == 1)
-                	KeyNorPressTimeOut = 0U;
-				#endif
+
               }
               break;
             default:
@@ -151,16 +141,6 @@ void vKeyboardTask( void * argument )
         }
       }
     }
-    #if (USE_KEY_TIME_OUT == 1)
-    KeyNorPressTimeOut++;
-    if ( KeyNorPressTimeOut >= (displaySleepDelay.value[0] * (KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) ) )
-    {
-      KeyNorPressTimeOut = 0U;
-      TEvent.KeyCode     = time_out;
-      TEvent.Status      = MAKECODE;
-      xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-    }
-    #endif
   }
   TEvent.KeyCode = kl1_key;
                TEvent.Status  = MAKECODE;
