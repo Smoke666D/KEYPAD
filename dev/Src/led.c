@@ -203,7 +203,7 @@ void vSetLedOn(uint8_t Color,uint8_t State)
 /*
  *
  */
-void SetLedBlink(uint8_t Color, uint8_t State)
+void vSetLedBlink(uint8_t Color, uint8_t State)
 {
 	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
 	{
