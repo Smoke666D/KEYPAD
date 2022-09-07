@@ -64,7 +64,7 @@ typedef struct __packed
   unsigned char cStatus;
 } xKeyEvent;
 /*----------------------------- Functions ------------------------------------*/
-void          vKeyboardTask( void  * argument );//  __attribute__((optimize("-O3")));
+void          vKeyboardTask( void  * argument );
 void          vSetupKeyboard( void );
 void          vKeyboardInit( uint32_t Message );
 QueueHandle_t pGetKeyboardQueue( void );

@@ -215,37 +215,33 @@ CO_ReturnError_t CO_CANmodule_init(
 
        HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
 
-
-
-
-        if (HAL_CAN_Init(hcan) != HAL_OK)
-        {
+       if (HAL_CAN_Init(hcan) != HAL_OK)
+       {
             Error_Handler();
-        }
+       }
 
-        if (HAL_CAN_ActivateNotification(hcan,
+      if (HAL_CAN_ActivateNotification(hcan,
                   0
                   | CAN_IT_TX_MAILBOX_EMPTY
 				  | CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO0_FULL | CAN_IT_RX_FIFO0_OVERRUN
 				  | CAN_IT_RX_FIFO1_MSG_PENDING | CAN_IT_RX_FIFO1_FULL | CAN_IT_RX_FIFO1_OVERRUN
 				  ) != HAL_OK) {
               return CO_ERROR_ILLEGAL_ARGUMENT;
-          }
-        HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 6, 0);
-        HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
+      }
+      HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 6, 0);
+      HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
 
-        HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 6, 0);
-        HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
-
-
-        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn , 6, 0);
-       HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn );
+      HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 6, 0);
+      HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
 
 
-       HAL_NVIC_SetPriority(CAN1_RX1_IRQn  , 6, 0);
+      HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn , 6, 0);
+      HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn );
+
+      HAL_NVIC_SetPriority(CAN1_RX1_IRQn  , 6, 0);
       HAL_NVIC_EnableIRQ(CAN1_RX1_IRQn  );
 
-    return CO_ERROR_NO;
+    return ( CO_ERROR_NO );
 }
 
 
@@ -333,29 +329,25 @@ CO_CANtx_t *CO_CANtxBufferInit(
  * \param[in]       CANmodule: CAN module instance
  * \param[in]       buffer: Pointer to buffer to transmit
  */
-uint32_t TxMailbox;
-static uint8_t
-prv_send_can_message(CO_CANmodule_t* CANmodule, CO_CANtx_t *buffer) {
-    static  CAN_TxHeaderTypeDef pTXHeader;
-    uint8_t success = 0;
+static uint32_t TxMailbox;
+static  CAN_TxHeaderTypeDef pTXHeader ={0,0,CAN_ID_STD,0,0,DISABLE};
+
+static uint8_t prv_send_can_message(CO_CANmodule_t* CANmodule, CO_CANtx_t *buffer) {
 
     /* Check if TX FIFO is ready to accept more messages */
-    if (HAL_CAN_GetTxMailboxesFreeLevel(CANmodule->CANptr) > 0) {
-
+    if (HAL_CAN_GetTxMailboxesFreeLevel(CANmodule->CANptr) > 0)
+    {
         pTXHeader.DLC                = (uint32_t)buffer->DLC;
-        pTXHeader.ExtId              = 0U;
-        pTXHeader.IDE                = CAN_ID_STD;
         pTXHeader.RTR                = (buffer->ident & FLAG_RTR) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
         pTXHeader.StdId              = buffer->ident & CANID_MASK;
-        pTXHeader.TransmitGlobalTime = DISABLE;
 
         /* Now add message to FIFO. Should not fail */
         if (HAL_CAN_AddTxMessage(CANmodule->CANptr,  &pTXHeader, buffer->data, &TxMailbox) == HAL_OK)
         {
-        	success = 1;
+        	return 1U;
         }
     }
-    return success;
+    return 0U;
 }
 
 
@@ -483,10 +475,8 @@ void CO_CANmodule_process(CO_CANmodule_t *CANmodule) {
 
 
 
-void CAN_SendMessage()
+static void CAN_SendMessage()
 {
-
-
 	CANModule_local->firstCANtxMessage = false;
 	CANModule_local->bufferInhibitFlag = false;
     if(CANModule_local->CANtxCount > 0U)
@@ -512,9 +502,9 @@ void CAN_SendMessage()
         CO_UNLOCK_CAN_SEND(CANModule_local);
     }
 }
-
-
-
+/*
+ *
+ */
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
 {
 	CAN_SendMessage();
@@ -527,8 +517,9 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
 {
 	CAN_SendMessage();
 }
-
-
+/*
+ *
+ */
 static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
     static CAN_RxHeaderTypeDef rx;
     static CO_CANrxMsg_t rcvMsg;
@@ -550,50 +541,35 @@ static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
     }
     /* Setup identifier (with RTR) and length */
     rcvMsg.ident = rx.StdId  | (rx.RTR == CAN_RTR_REMOTE ? FLAG_RTR : 0x00);
-    rcvMsg.dlc = rx.DLC;
-    rcvMsgIdent = rcvMsg.ident;
+    rcvMsg.dlc	 = rx.DLC;
+    rcvMsgIdent  = rcvMsg.ident;
 
-    /*
-     * Hardware filters are not used for the moment
-     * \todo: Implement hardware filters...
-     */
-    if (CANModule_local->useCANrxFilters) {
-
-    	buffer = CANModule_local->rxArray;
-    	        for (index = CANModule_local->rxSize; index > 0U; --index, ++buffer) {
-    	            if (((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U) {
-    	                messageFound = 1;
-    	                break;
-    	            }
-    	        }
-
-
-    } else {
-        /*
-         * We are not using hardware filters, hence it is necessary
-         * to manually match received message ID with all buffers
-         */
-        buffer = CANModule_local->rxArray;
-        for (index = CANModule_local->rxSize; index > 0U; --index, ++buffer) {
-            if (((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U) {
-                messageFound = 1;
-                break;
-            }
-        }
+    buffer = CANModule_local->rxArray;
+    for (index = CANModule_local->rxSize; index > 0U; --index, ++buffer)
+    {
+         if (((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U)
+         {
+              messageFound = 1;
+              break;
+          }
     }
-
     /* Call specific function, which will process the message */
-    if (messageFound && buffer != NULL && buffer->CANrx_callback != NULL) {
+    if (messageFound && buffer != NULL && buffer->CANrx_callback != NULL)
+    {
         buffer->CANrx_callback(buffer->object, (void*) &rcvMsg);
     }
+    return;
 }
-
-
+/*
+ *
+ */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	prv_read_can_received_msg(hcan, CAN_RX_FIFO0);
 }
-
+/*
+ *
+ */
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	prv_read_can_received_msg(hcan, CAN_RX_FIFO1);

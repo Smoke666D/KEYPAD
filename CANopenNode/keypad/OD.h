@@ -131,8 +131,6 @@ typedef struct {
     uint8_t x2002_digitalOutputModuleLEDBlink_sub0;
     uint8_t x2002_digitalOutputModuleLEDBlink[OD_CNT_ARR_2002];
     uint8_t x2003_digitalOutputModuleBrightnessLevel_sub0;
-    uint8_t x2014_setStartupLEDShow;
-    uint8_t x2100_setDEMOMode;
 } OD_RAM_t;
 
 typedef struct {

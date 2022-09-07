@@ -23,6 +23,7 @@
 #define BUTTON_COUNT 8
 
 #define  MAX_BRIGTH 0x3F
+#define  MAX_DATA 0xFF
 #define  MAX_BRIGTH_COUNTER MAX_BRIGTH *3
 #define  OFF 0x00
 
@@ -57,15 +58,13 @@
 #define FULL_SHOW  0x01
 #define FLASH_SHOW 0x02
 
-void SetBackLigthColor(uint8_t color);
-void SetLedBrigth(uint8_t brigth);
+void vSetBackLigthColor(uint8_t color);
+void vSetLedBrigth(uint8_t brigth);
 void vSetLedOn(uint8_t Color,uint8_t State);
 void vSetLedBlink(uint8_t Color,uint8_t State);
-void SetBrigth(uint8_t brigth);
+void vSetBrigth(uint8_t brigth);
 void vLedInit(TIM_HandleTypeDef * htim, SPI_HandleTypeDef* spi );
-void vLedProcess(void *argument);
 void vSetBackLigth(uint8_t brigth);
-void vSPTuSDealy(uint16_t Delay);
-void StartLEDShow(uint8_t show_type);
-void LedProcees();
+void vLedDriverStart(void);
+void vLedProcess( void );
 #endif /* INC_LED_H_ */

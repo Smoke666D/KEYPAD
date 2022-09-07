@@ -98,8 +98,6 @@ OD_ATTR_RAM OD_RAM_t OD_RAM = {
     .x2002_digitalOutputModuleLEDBlink_sub0 = 0x03,
     .x2002_digitalOutputModuleLEDBlink = {0x00, 0x00, 0x00},
     .x2003_digitalOutputModuleBrightnessLevel_sub0 = 0x06,
-    .x2014_setStartupLEDShow = 0x00,
-    .x2100_setDEMOMode = 0x00
 };
 
 OD_ATTR_PERSIST_COMM OD_PERSIST_COMM_t OD_PERSIST_COMM = {
@@ -144,7 +142,6 @@ typedef struct {
     OD_obj_var_t o_2012_setDeviceActiveOnStartup;
     OD_obj_var_t o_2013_CANopenNodeID;
     OD_obj_var_t o_2014_setStartupLEDShow;
-    OD_obj_var_t o_2100_setDEMOMode;
 } ODObjs_t;
 
 static CO_PROGMEM ODObjs_t ODObjs = {
@@ -508,16 +505,6 @@ static CO_PROGMEM ODObjs_t ODObjs = {
         .dataOrig = NULL,
         .attribute = ODA_SDO_W,
         .dataLength = 1
-    },
-    .o_2014_setStartupLEDShow = {
-        .dataOrig = &OD_RAM.x2014_setStartupLEDShow,
-        .attribute = ODA_SDO_W,
-        .dataLength = 1
-    },
-    .o_2100_setDEMOMode = {
-        .dataOrig = &OD_RAM.x2100_setDEMOMode,
-        .attribute = ODA_SDO_W,
-        .dataLength = 1
     }
 };
 
@@ -556,7 +543,6 @@ static OD_ATTR_OD OD_entry_t ODList[] = {
     {0x2012, 0x01, ODT_VAR, &ODObjs.o_2012_setDeviceActiveOnStartup, NULL},
     {0x2013, 0x01, ODT_VAR, &ODObjs.o_2013_CANopenNodeID, NULL},
     {0x2014, 0x01, ODT_VAR, &ODObjs.o_2014_setStartupLEDShow, NULL},
-    {0x2100, 0x01, ODT_VAR, &ODObjs.o_2100_setDEMOMode, NULL},
     {0x0000, 0x00, 0, NULL, NULL}
 };
 

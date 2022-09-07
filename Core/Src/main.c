@@ -762,8 +762,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
-	 vLedDriverStart();
-  //  StartLEDShow();
+  vLedDriverStart();
   for(;;)
   {
     osDelay(500);

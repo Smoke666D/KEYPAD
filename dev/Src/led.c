@@ -7,26 +7,18 @@
 #include "led.h"
 #include "math.h"
 
-
-
 static uint8_t LED_ON[SPI_PACKET_SIZE] 			=         { 0x00 , 0x00 , 0x00 };
 static uint8_t LED_BLINK[SPI_PACKET_SIZE]    	=         { 0x00 , 0x00 , 0x00 };
 
 static uint16_t backligch_brigth		 = 0x1F;
-static uint8_t backligth_color 		 	 = 0U;
 static uint16_t led_brigth 				 = 0x3F;
-static uint8_t led_show_enable  		 = OFF;
-static uint8_t startup_backligth		 = 0x3F;
 static SPI_HandleTypeDef* LEDSpi         = NULL;
 static uint8_t color_div 				 = 1U;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static uint8_t brigth_color[SPI_PACKET_SIZE];
-void SetBackBrigth(uint8_t brigth);
-void BackBrigthON();
-void BackBrigthOFF();
-uint8_t vSTPErrorDetection();
-void vSTPNormalMode();
-
+static uint16_t led_brigth_counter 		= 0;
+static uint16_t led_blink_counter 		= 0;
+static uint8_t BlinkON					= 1;
 /*
  * Защелка данных в SPI буферах
  * Поскольку длителность импульса мала, не целесобразно делать задержку через что-то, кроме пустого цикла
@@ -50,14 +42,14 @@ static void vDrvLedSetState(uint8_t * state)
 /*
  *
  */
-uint16_t calcBrigt(uint8_t pbr)
+static uint16_t calcBrigt(uint8_t pbr)
 {
   return ( ( pbr > MAX_BRIGTH )?  MAX_BRIGTH :  ( sin((float)pbr*(3.14/2.0)/MAX_BRIGTH)*(MAX_BRIGTH_COUNTER) ) );
 }
 /*
  *
  */
-uint8_t vSTPErrorDetection()
+static uint8_t vSTPErrorDetection()
 {
 	/*Входим в режим Detectiom*/
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); /*OE High*/
@@ -120,7 +112,7 @@ uint8_t vSTPErrorDetection()
 /*
  *
  */
-void vSTPNormalMode()
+static void vSTPNormalMode()
 {
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET); /*OE High*/
 	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
@@ -154,11 +146,10 @@ void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi )
 {
 	pwmtim = htim;
 	LEDSpi = spi;
-	backligth_color  = vFDGetRegState(DEF_BL_COLOR_ADR);
-	led_brigth 		 = calcBrigt(vFDGetRegState(DEF_LED_BRIGTH_ADR));
-	backligch_brigth = calcBrigt(vFDGetRegState(DEF_BL_BRIGTH_ADR));
-	led_show_enable = vFDGetRegState(LED_SHOW_ADRRES);
-    SetBrigth(MAX_BRIGTH);
+	vSetBackLigthColor(vFDGetRegState(DEF_BL_COLOR_ADR));
+	vSetLedBrigth(vFDGetRegState(DEF_LED_BRIGTH_ADR));
+	vSetBackLigth(vFDGetRegState(DEF_BL_BRIGTH_ADR));
+    vSetBrigth(MAX_BRIGTH);
     return;
 }
 /*
@@ -178,15 +169,7 @@ void vLedDriverStart(void)
 	{
 		vSTPNormalMode();
 	}
-//	vSetBackLigth(0);
-//	vDrvLedSetState(&LED_ON[0]);
 	HAL_TIM_MspPostInit(pwmtim);
-	if (led_show_enable!=DISABLE)
-    {
-	 	StartLEDShow(led_show_enable);
-		led_show_enable = DISABLE;
-
-    }
 	return;
 }
 /*
@@ -215,28 +198,19 @@ void vSetLedBlink(uint8_t Color, uint8_t State)
 /*
  *
  */
-void SetLedBrigth(uint8_t brigth)
+void vSetLedBrigth(uint8_t brigth)
 {
 	led_brigth = calcBrigt(brigth);
 	return;
 }
 
-void SetBackLigthColor(uint8_t color)
+void vSetBackLigthColor(uint8_t color)
 {
-	backligth_color = color;
-	vSetBackLigth(backligch_brigth);
-}
-
-/*
- *
- */
-void vSetBackLigth(uint8_t brigth)
-{
-	brigth_color[0]=0xFF;
-	brigth_color[1]=0xFF;
-	brigth_color[2]=0xFF;
+	brigth_color[0]=MAX_DATA;
+	brigth_color[1]=MAX_DATA;
+	brigth_color[2]=MAX_DATA;
 	color_div =2;
-	switch (backligth_color)
+	switch (color)
 	{
 		case  RED:
 			brigth_color[1]=0x00;
@@ -272,15 +246,20 @@ void vSetBackLigth(uint8_t brigth)
 		default:
 			break;
 	}
-	backligch_brigth =calcBrigt( brigth);
+	return;
 }
 
 /*
- * Функция установки якрости.
  *
  */
-
-void SetBrigth(uint8_t brigth)
+void vSetBackLigth(uint8_t brigth)
+{
+	backligch_brigth =calcBrigt( brigth);
+}
+/*
+ * Функция установки якрости.
+ */
+void vSetBrigth(uint8_t brigth)
 {
 
 	TIM_OC_InitTypeDef sConfigOC = {0};
@@ -311,47 +290,7 @@ void SetBrigth(uint8_t brigth)
 /*
  *
  */
-void StartLEDShow(uint8_t show_type)
-{
-		switch (show_type)
-		{
-			case FULL_SHOW:
-				for (uint8_t i=1;i<=0x3F;i=i+2)
-				{
-					vSetBackLigth(i);
-					vTaskDelay(50);
-				}
-				for (uint8_t i = 0x3F;i>0;)
-				{
-					if (i>2)
-					{
-						i=i-2;
-						vSetBackLigth(i);
-						vTaskDelay(50);
-					}
-					else
-					{
-						vSetBackLigth(0);
-						break;
-					}
-			    }
-				break;
-			case FLASH_SHOW:
-				vSetBackLigth(startup_backligth);
-				vTaskDelay(500);
-				vSetBackLigth(0);
-				break;
-			default:
-				break;
-
-		}
-		backligch_brigth = vFDGetRegState(DEF_BL_BRIGTH_ADR);
-}
-
-static uint16_t led_brigth_counter = 0;
-static uint16_t led_blink_counter = 0;
-static uint8_t BlinkON	= 1;
-void LedProcees()
+void vLedProcess( void )
 {
 	uint8_t data[SPI_PACKET_SIZE];
 	uint8_t temp_led;

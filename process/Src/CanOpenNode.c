@@ -10,6 +10,7 @@
 #include "CANOpen.h"
 #include "CO_driver_ST32F103.h"
 #include "OD.h"
+#include "task.h"
 /*
  * Локальные переменные
  */
@@ -154,8 +155,6 @@ void vCanOpenProcess(void *argument)
 
 	            /* CANopen process */
 	            reset = CO_process(CO, false, timeDifference_us, &max_sleep_time_us);
-
-
 	            /*
 	             * We want to wakeup periodic thread,
 	             * in-charge of other important CANopen tasks
