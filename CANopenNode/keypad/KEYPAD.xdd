@@ -15,7 +15,7 @@
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2021-12-07" fileModificationTime="14:02:55.6312582+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModifiedBy="rOBIN 2" fileModificationDate="2022-11-01" fileModificationTime="16:58:05.6954643+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <q1:DeviceIdentity>
         <q1:vendorName>VENDORNAME</q1:vendorName>
         <q1:vendorID>2</q1:vendorID>
@@ -98,6 +98,14 @@
           <q1:array name="Digital output module, Brightness Level" uniqueID="UID_ARR_2003">
             <q1:subrange lowerLimit="0" upperLimit="6" />
             <USINT />
+          </q1:array>
+          <q1:array name="KeyBoard parametr" uniqueID="UID_ARR_2004">
+            <q1:subrange lowerLimit="0" upperLimit="4" />
+            <USINT />
+          </q1:array>
+          <q1:array name="PWM Parametr" uniqueID="UID_ARR_2005">
+            <q1:subrange lowerLimit="0" upperLimit="2" />
+            <UINT />
           </q1:array>
           <q1:struct name="Identity" uniqueID="UID_REC_1018">
             <q1:varDeclaration name="max sub-index" uniqueID="UID_RECSUB_101800">
@@ -1310,6 +1318,85 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
               </q1:range>
             </q1:allowedValues>
           </q1:parameter>
+          <q1:parameter uniqueID="UID_OBJ_2004">
+            <label lang="en">KeyBoard parametr</label>
+            <q1:dataTypeIDRef uniqueIDRef="UID_ARR_2004" />
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200400">
+            <label lang="en">Highest sub-index supported</label>
+            <USINT />
+            <q1:defaultValue value="0x04" />
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200401" access="readWriteInput">
+            <label lang="en">Keyboard period in ms</label>
+            <USINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x3F" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200402" access="readWriteInput">
+            <label lang="en">KeyDown delay</label>
+            <USINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x3F" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200403" access="readWriteInput">
+            <label lang="en">KeyDown hold</label>
+            <USINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x09" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200404" access="readWriteInput">
+            <label lang="en">RepeatTime</label>
+            <USINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x09" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_OBJ_2005">
+            <label lang="en">PWM Parametr</label>
+            <q1:dataTypeIDRef uniqueIDRef="UID_ARR_2005" />
+            <q1:property name="CO_storageGroup" value="ROM" />
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200500">
+            <label lang="en">Highest sub-index supported</label>
+            <USINT />
+            <q1:defaultValue value="0x02" />
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200501" access="write">
+            <label lang="en">PWM Period</label>
+            <UINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x3F" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
+          <q1:parameter uniqueID="UID_SUB_200502" access="write">
+            <label lang="en">PWM Durty</label>
+            <UINT />
+            <q1:allowedValues>
+              <q1:range>
+                <minValue value="0x00" />
+                <maxValue value="0x3F" />
+              </q1:range>
+            </q1:allowedValues>
+          </q1:parameter>
           <q1:parameter uniqueID="UID_OBJ_2010" access="write">
             <label lang="en">Baud rate setting</label>
             <USINT />
@@ -1351,28 +1438,6 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
               </q1:range>
             </q1:allowedValues>
           </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2014" access="write">
-            <label lang="en">Set startup LED show</label>
-            <USINT />
-            <q1:defaultValue value="0" />
-            <q1:allowedValues>
-              <q1:range>
-                <minValue value="0" />
-                <maxValue value="2" />
-              </q1:range>
-            </q1:allowedValues>
-          </q1:parameter>
-          <q1:parameter uniqueID="UID_OBJ_2100" access="write">
-            <label lang="en">Set DEMO mode</label>
-            <USINT />
-            <q1:defaultValue value="0" />
-            <q1:allowedValues>
-              <q1:range>
-                <minValue value="0" />
-                <maxValue value="1" />
-              </q1:range>
-            </q1:allowedValues>
-          </q1:parameter>
         </q1:parameterList>
       </q1:ApplicationProcess>
     </ProfileBody>
@@ -1390,7 +1455,7 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2021-12-07" fileModificationTime="14:02:55.6312582+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="KEYPAD.xdd" fileCreator="Smoke666" fileCreationDate="2017-01-31" fileCreationTime="17:13:00.0000000+03:00" fileModificationDate="2022-11-01" fileModificationTime="16:58:05.6954643+03:00" fileVersion="3" supportedLanguages="en" xmlns="">
       <ApplicationLayers>
         <q2:CANopenObjectList>
           <CANopenObject index="1000" name="Device type" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_1000" />
@@ -1602,12 +1667,22 @@ A one	indicates	the	switch	is	pressed, a	zero	indicates	the	switch	is	released</
             <CANopenSubObject subIndex="05" name="Set startup Indicator LED brightness level" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200305" />
             <CANopenSubObject subIndex="06" name="Set startup backlight brightness level" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200306" />
           </CANopenObject>
+          <CANopenObject index="2004" name="KeyBoard parametr" objectType="8" uniqueIDRef="UID_OBJ_2004" subNumber="5">
+            <CANopenSubObject subIndex="00" name="Highest sub-index supported" objectType="7" PDOmapping="no" uniqueIDRef="UID_SUB_200400" />
+            <CANopenSubObject subIndex="01" name="Keyboard period in ms" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200401" />
+            <CANopenSubObject subIndex="02" name="KeyDown delay" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200402" />
+            <CANopenSubObject subIndex="03" name="KeyDown hold" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200403" />
+            <CANopenSubObject subIndex="04" name="RepeatTime" objectType="7" PDOmapping="RPDO" uniqueIDRef="UID_SUB_200404" />
+          </CANopenObject>
+          <CANopenObject index="2005" name="PWM Parametr" objectType="8" uniqueIDRef="UID_OBJ_2005" subNumber="3">
+            <CANopenSubObject subIndex="00" name="Highest sub-index supported" objectType="7" PDOmapping="no" uniqueIDRef="UID_SUB_200500" />
+            <CANopenSubObject subIndex="01" name="PWM Period" objectType="7" PDOmapping="no" uniqueIDRef="UID_SUB_200501" />
+            <CANopenSubObject subIndex="02" name="PWM Durty" objectType="7" PDOmapping="no" uniqueIDRef="UID_SUB_200502" />
+          </CANopenObject>
           <CANopenObject index="2010" name="Baud rate setting" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2010" />
           <CANopenObject index="2011" name="Set Boot-up service" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2011" />
           <CANopenObject index="2012" name="Set device active on startup" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2012" />
           <CANopenObject index="2013" name="CANopen node ID" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2013" />
-          <CANopenObject index="2014" name="Set startup LED show" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2014" />
-          <CANopenObject index="2100" name="Set DEMO mode" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2100" />
         </q2:CANopenObjectList>
         <dummyUsage>
           <dummy entry="Dummy0001=0" />

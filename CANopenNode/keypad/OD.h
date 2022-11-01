@@ -16,7 +16,7 @@
 
         Created:      31.01.2017 17:13:00
         Created By:   Smoke666
-        Modified:     07.12.2021 14:02:55
+        Modified:     01.11.2022 16:58:05
         Modified By:  rOBIN 2
 
     Device Info:
@@ -48,6 +48,8 @@
 #define OD_CNT_ARR_2001 3
 #define OD_CNT_ARR_2002 3
 #define OD_CNT_ARR_2003 6
+#define OD_CNT_ARR_2004 4
+#define OD_CNT_ARR_2005 2
 
 
 /*******************************************************************************
@@ -108,6 +110,7 @@ typedef struct {
         uint32_t mappedObject_4;
         uint32_t mappedObject_5;
     } x1A00_TPDOMappingParameter;
+    uint8_t x2005_PWM_Parametr_sub0;
 } OD_ROM_t;
 
 typedef struct {
@@ -131,6 +134,9 @@ typedef struct {
     uint8_t x2002_digitalOutputModuleLEDBlink_sub0;
     uint8_t x2002_digitalOutputModuleLEDBlink[OD_CNT_ARR_2002];
     uint8_t x2003_digitalOutputModuleBrightnessLevel_sub0;
+    uint8_t x2004_keyBoardParametr[OD_CNT_ARR_2004];
+    uint8_t x2004_keyBoardParametr_sub0;
+
 } OD_RAM_t;
 
 typedef struct {
@@ -188,12 +194,12 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H2001 &OD->list[22]
 #define OD_ENTRY_H2002 &OD->list[23]
 #define OD_ENTRY_H2003 &OD->list[24]
-#define OD_ENTRY_H2010 &OD->list[25]
-#define OD_ENTRY_H2011 &OD->list[26]
-#define OD_ENTRY_H2012 &OD->list[27]
-#define OD_ENTRY_H2013 &OD->list[28]
-#define OD_ENTRY_H2014 &OD->list[29]
-#define OD_ENTRY_H2100 &OD->list[30]
+#define OD_ENTRY_H2004 &OD->list[25]
+#define OD_ENTRY_H2005 &OD->list[26]
+#define OD_ENTRY_H2010 &OD->list[27]
+#define OD_ENTRY_H2011 &OD->list[28]
+#define OD_ENTRY_H2012 &OD->list[29]
+#define OD_ENTRY_H2013 &OD->list[30]
 
 
 /*******************************************************************************
@@ -224,12 +230,12 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H2001_digitalOutputModuleLED_ON &OD->list[22]
 #define OD_ENTRY_H2002_digitalOutputModuleLEDBlink &OD->list[23]
 #define OD_ENTRY_H2003_digitalOutputModuleBrightnessLevel &OD->list[24]
-#define OD_ENTRY_H2010_baudRateSetting &OD->list[25]
-#define OD_ENTRY_H2011_setBoot_upService &OD->list[26]
-#define OD_ENTRY_H2012_setDeviceActiveOnStartup &OD->list[27]
-#define OD_ENTRY_H2013_CANopenNodeID &OD->list[28]
-#define OD_ENTRY_H2014_setStartupLEDShow &OD->list[29]
-#define OD_ENTRY_H2100_setDEMOMode &OD->list[30]
+#define OD_ENTRY_H2004_keyBoardParametr &OD->list[25]
+#define OD_ENTRY_H2005_PWM_Parametr &OD->list[26]
+#define OD_ENTRY_H2010_baudRateSetting &OD->list[27]
+#define OD_ENTRY_H2011_setBoot_upService &OD->list[28]
+#define OD_ENTRY_H2012_setDeviceActiveOnStartup &OD->list[29]
+#define OD_ENTRY_H2013_CANopenNodeID &OD->list[30]
 
 
 /*******************************************************************************

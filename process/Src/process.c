@@ -17,6 +17,9 @@ static ODR_t OD_writeBRIGTH(OD_stream_t *stream,const void *buf,OD_size_t count,
 static ODR_t OD_writeNode(OD_stream_t *stream,const void *buf, OD_size_t count, OD_size_t *countWritten);
 static ODR_t OD_writeBITRATE(OD_stream_t *stream,const void *buf, OD_size_t count, OD_size_t *countWritten);
 static ODR_t OD_writeNMT(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writePWM(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_writeKeyboardParametr(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten);
+static ODR_t OD_readKeyboardParametr(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countRead);
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
 OD_extension_t OD_LED_data_extension = {
@@ -34,7 +37,7 @@ OD_extension_t OD_BLINK_data_extension = {
 OD_extension_t OD_BRIGTH_data_extension = {
     .object = NULL,
     .read =   OD_readOriginal,
-    .write = OD_writeBRIGTH
+    .write =  OD_writeBRIGTH
 };
 
 /* Variables used for triggering TPDO, see simulation in app_programRt(). */
@@ -63,12 +66,26 @@ OD_extension_t OD_NMT_data_extension = {
 };
 
 
+OD_extension_t OD_keyBoardParametr_extension = {
+    .object = NULL,
+    .read =  OD_readOriginal,
+    .write = OD_writeKeyboardParametr
+};
+
+OD_extension_t OD_PWM_extension = {
+    .object = NULL,
+    .read =  OD_readOriginal,
+    .write = OD_writePWM
+};
+
 uint8_t *OD_KEY_flagsPDO = NULL;
 
 
 
 void vProceesInit( void)
 {
+
+
 	pKeyboard = pGetKeyboardQueue();
 	OD_extension_init(OD_ENTRY_H2000_digitalInputModuleKeysStates, &OD_KEY_extension);
 	OD_extension_init(OD_ENTRY_H2001_digitalOutputModuleLED_ON, &OD_LED_data_extension);
@@ -77,7 +94,79 @@ void vProceesInit( void)
 	OD_extension_init(OD_ENTRY_H2013_CANopenNodeID,   &OD_NODE_data_extension);
 	OD_extension_init(OD_ENTRY_H2012_setDeviceActiveOnStartup, &OD_NMT_data_extension);
 	OD_extension_init(OD_ENTRY_H2010_baudRateSetting, &OD_BITRATE_data_extension);
+	OD_extension_init(OD_ENTRY_H2004_keyBoardParametr, &OD_keyBoardParametr_extension);
+
+	OD_extension_init(OD_ENTRY_H2005_PWM_Parametr, &OD_PWM_extension);
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
+}
+
+
+
+static ODR_t OD_writePWM(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten)
+{
+	ODR_t res = ODR_DEV_INCOMPAT;
+	if ((stream != NULL) && (buf != NULL) && (countWritten != NULL))
+	{
+		switch (stream->subIndex)
+		{
+			case PWM_PERIOD_SUBINDEX:
+				vFDSetRegState(PWM_PERIOD_ADDRESS  , CO_getUint8(buf) );
+				break;
+		   case PWM_DUTY_SUBINDEX :
+			   	vFDSetRegState( PWM_DUTY_ADDRESS  , CO_getUint8(buf) );
+			  	break;
+		  default:
+			  res =  ODR_INVALID_VALUE;
+			  break;
+		}
+		if ( res !=  ODR_INVALID_VALUE)
+		{
+			res = OD_writeOriginal(stream, buf, count, countWritten);
+		}
+	}
+	return ( res );
+
+}
+static ODR_t OD_writeKeyboardParametr(OD_stream_t *stream, const void *buf, OD_size_t count, OD_size_t *countWritten)
+{
+	ODR_t res = ODR_DEV_INCOMPAT;
+	if ((stream != NULL) && (buf != NULL) && (countWritten != NULL))
+	{
+		switch (stream->subIndex)
+		{
+	       		    case KEYBOARD_PERIOD_SUBINDEX:
+	       		    	vFDSetRegState( KEYBOARD_PERIOD_ADRRES , CO_getUint8(buf) );
+	       		    	break;
+	       		    case KEYDOWN_DELAY_SUBINDEX:
+	       		    	vFDSetRegState( KEYDOWN_DELAY_ADRRES  , CO_getUint8(buf) );
+	       		    	break;
+	       		    case KEYDOWN_HOLD_SUBINDEX :
+	       		    	vFDSetRegState(KEYDOWN_HOLD_ADDRESS  , CO_getUint8(buf) );
+	       		    	break;
+	       		    case REPEAT_TIME_SUBINDEX :
+	       		    	vFDSetRegState( REPEAT_TIME_ADDRESS  , CO_getUint8(buf) );
+	       		    	break;
+	       		    default:
+	       		    	res =  ODR_INVALID_VALUE;
+	       		    	break;
+		}
+		if ( res !=  ODR_INVALID_VALUE)
+		{
+			res = OD_writeOriginal(stream, buf, count, countWritten);
+			res = ODR_OK;
+		}
+	}
+	return ( res );
+}
+
+
+static ODR_t OD_readKeyboardParametr(OD_stream_t *stream, void *buf, OD_size_t count, OD_size_t *countRead)
+{
+ 	if  (stream != NULL)
+ 	{
+ 		stream->dataOrig = cgetREGAdr(KEYBOARD_PERIOD_ADRRES);
+ 	}
+    return  OD_readOriginal(stream, buf, count, countRead);;
 }
 
 
@@ -87,20 +176,25 @@ void vProceesInit( void)
  */
 ODR_t OD_writeNMT(OD_stream_t *stream,const void *buf,  OD_size_t count, OD_size_t *countWritten)
 {
+	ODR_t res = ODR_OK;
 	if (stream == NULL || buf == NULL || countWritten == NULL)
 	{
-		return  ( ODR_DEV_INCOMPAT );
+		res = ODR_DEV_INCOMPAT;
 	}
-	switch (CO_getUint8(buf))
+	else
 	{
-	    case ACTIVE:
-	    case NOT_ACTIVE:
-	    	vFDSetRegState( NMT_STATE_ADR , CO_getUint8(buf) );
-	    	break;
-	    default:
-	    	return ( ODR_INVALID_VALUE );
+		switch (CO_getUint8(buf))
+		{
+	    	case ACTIVE:
+	    	case NOT_ACTIVE:
+	    		vFDSetRegState( NMT_STATE_ADR , CO_getUint8(buf) );
+	    		break;
+	    	default:
+	    		res = ODR_INVALID_VALUE;
+	    		break;
+		}
 	}
-	return ( ODR_OK );
+	return ( res );
 }
 /*
  * 	Callback функция записи в oбъект 2013. Node Id. Принимает значения от 1 до 7F
@@ -145,20 +239,22 @@ ODR_t OD_writeBITRATE(OD_stream_t *stream,const  void *buf,
  */
 ODR_t OD_writeLed(OD_stream_t *stream,const  void *buf, OD_size_t count, OD_size_t *countWritten)
 {
-
-	if (stream == NULL || buf == NULL || countWritten == NULL)
+	ODR_t res = ODR_DEV_INCOMPAT;
+	if ((stream != NULL) && (buf != NULL) && (countWritten != NULL))
 	{
-		return ( ODR_DEV_INCOMPAT );
+		switch (stream->subIndex)
+		{
+			case RED_COLOR:
+			case GREEN_COLOR:
+			case BLUE_COLOR:
+				vSetLedOn(stream->subIndex,CO_getUint8(buf));
+				res = OD_writeOriginal(stream, buf, count, countWritten);
+				break;
+			default:
+				res = ODR_SUB_NOT_EXIST;
+		}
 	}
-	if ((stream->subIndex >=RED_COLOR) && (stream->subIndex <=BLUE_COLOR))
-	{
-		vSetLedOn(stream->subIndex,CO_getUint8(buf));
-	}
-	else
-	{
-    	return ( ODR_SUB_NOT_EXIST );
-	}
-	return ( OD_writeOriginal(stream, buf, count, countWritten) );
+	return ( res );
 }
 
 ODR_t OD_writeBlink(OD_stream_t *stream,const  void *buf,

@@ -225,9 +225,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
 
-
+   vFDInit();
    vLedInit(&htim2, &hspi2);
-
    vSetupKeyboard();
    vProceesInit();
    vCanOpenInit(&hcan);

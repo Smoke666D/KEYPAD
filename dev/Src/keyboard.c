@@ -68,11 +68,11 @@ void vKeyboardTask( void * argument )
   KeyEvent      TEvent;
   GPIO_PinState TK[KEYBOARD_COUNT];
   uint8_t       i = 0U;
-
+  //uint8_t delay
   for(;;)
   {
-    vTaskDelay(KEY_PEREOD/ portTICK_RATE_MS );
-    xEventGroupWaitBits(pxKeyStatusFLag,KEY_READY,pdFALSE,pdTRUE,portMAX_DELAY); /* Задача ждет флага готовности KEY_READY, */
+
+    vTaskDelay(vFDGetRegState(KEYBOARD_PERIOD_ADRRES) );
     for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Считываем текущее состояние портов клавиатуры */
     {
       TK[i]=  HAL_GPIO_ReadPin( xKeyPortMass[i].KeyPort, xKeyPortMass[i].KeyPin );
@@ -99,7 +99,7 @@ void vKeyboardTask( void * argument )
         {
           COUNTERS[i]++;
           /*если счетчик превысил значение SWITCHONDELAY то фиксируем нажатие*/
-          if ( COUNTERS[i] >= ( SWITCHONDELAY / KEY_PEREOD ) )
+          if ( COUNTERS[i] >= ( vFDGetRegState( KEYDOWN_DELAY_ADRRES) ) )
           {
             COUNTERS[i]    = 0U;
             STATUS[i]      = KEY_ON;
@@ -115,7 +115,7 @@ void vKeyboardTask( void * argument )
           switch ( STATUS[i] )
           {
             case KEY_ON:
-              if ( COUNTERS[i] >= ( DefaultDelay / KEY_PEREOD ) )
+              if ( COUNTERS[i] >=  vFDGetRegState( KEYDOWN_HOLD_ADDRESS)  )
               {
                 STATUS[i]      = KEY_ON_REPEAT;
                 COUNTERS[i]    = 0U;
@@ -126,7 +126,7 @@ void vKeyboardTask( void * argument )
               }
               break;
             case KEY_ON_REPEAT:
-              if ( COUNTERS[i] >= ( DefaultRepeatRate / KEY_PEREOD ) )
+              if ( COUNTERS[i] >= vFDGetRegState( REPEAT_TIME_ADDRESS ) )
               {
                 COUNTERS[i]    = 0U;
                 TEvent.KeyCode = CODES[i];

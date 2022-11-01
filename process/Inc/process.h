@@ -44,7 +44,13 @@
 
 #define keys_state_message 180U
 
+#define KEYBOARD_PERIOD_SUBINDEX    0x01
+#define KEYDOWN_DELAY_SUBINDEX      0x02
+#define KEYDOWN_HOLD_SUBINDEX       0x03
+#define REPEAT_TIME_SUBINDEX        0x04
 
+#define PWM_PERIOD_SUBINDEX		   0x01
+#define PWM_DUTY_SUBINDEX		   0x02
 
 
 void vProcessTask( void * argument );

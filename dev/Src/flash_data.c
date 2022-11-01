@@ -9,9 +9,10 @@
 #include "flash_data.h"
 #include "301/CO_NMT_Heartbeat.h"
 #include "led.h"
+#include "OD.h"
 
 static uint8_t FisrtStart = 1;
-static uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,DISABLE};
+uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,100, 1, 4, 3, 200, 50};
 
 static uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
 static uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
@@ -19,6 +20,11 @@ static uint16_t MEM_If_Init_FS(void);
 static uint16_t MEM_If_Erase_FS(void);
 static uint16_t MEM_If_DeInit_FS(void);
 
+
+void * cgetREGAdr(uint8_t adr)
+{
+	return ((void *)&SettingsREG[adr]);
+}
 
 void vFDWtiteReg(void)
 {
@@ -42,6 +48,10 @@ void vFDInit( void )
 	   }
 		MEM_If_Read_FS(src, &SettingsREG[0],  sizeof(SettingsREG));
 		FisrtStart = 0;
+		OD_RAM.x2004_keyBoardParametr[0]= SettingsREG[KEYBOARD_PERIOD_ADRRES ];
+		OD_RAM.x2004_keyBoardParametr[1]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 1 ];
+		OD_RAM.x2004_keyBoardParametr[2]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 2 ];
+		OD_RAM.x2004_keyBoardParametr[3]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 3 ];
 	}
 }
 
