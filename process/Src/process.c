@@ -95,7 +95,6 @@ void vProceesInit( void)
 	OD_extension_init(OD_ENTRY_H2012_setDeviceActiveOnStartup, &OD_NMT_data_extension);
 	OD_extension_init(OD_ENTRY_H2010_baudRateSetting, &OD_BITRATE_data_extension);
 	OD_extension_init(OD_ENTRY_H2004_keyBoardParametr, &OD_keyBoardParametr_extension);
-
 	OD_extension_init(OD_ENTRY_H2005_PWM_Parametr, &OD_PWM_extension);
 	OD_KEY_flagsPDO = OD_getFlagsPDO(OD_ENTRY_H2000_digitalInputModuleKeysStates);
 }
@@ -110,10 +109,10 @@ static ODR_t OD_writePWM(OD_stream_t *stream, const void *buf, OD_size_t count, 
 		switch (stream->subIndex)
 		{
 			case PWM_PERIOD_SUBINDEX:
-				vFDSetRegState(PWM_PERIOD_ADDRESS  , CO_getUint8(buf) );
+				vFDSetRegState16(PWM_PERIOD_ADDRESS  , CO_getUint16(buf) );
 				break;
 		   case PWM_DUTY_SUBINDEX :
-			   	vFDSetRegState( PWM_DUTY_ADDRESS  , CO_getUint8(buf) );
+			   	vFDSetRegState16( PWM_DUTY_ADDRESS  , CO_getUint16(buf) );
 			  	break;
 		  default:
 			  res =  ODR_INVALID_VALUE;
@@ -376,13 +375,17 @@ void vProcessTask( void * argument )
 				   key_mask = 0U;
 				   break;
 			}
-			if ( TempEvent.Status == MAKECODE ) {
-				OD_RAM.x2000_digitalInputModuleKeysStates[0] |= key_mask;
+			uint8_t data;
+			OD_get_value(OD_ENTRY_H2000_digitalInputModuleKeysStates,0x01,&data,1,true);
+			if ( TempEvent.Status == MAKECODE )
+			{
+				 data |= key_mask;
 			}
 			else
 			{
-				OD_RAM.x2000_digitalInputModuleKeysStates[0] &= ~key_mask;
+				data &= ~key_mask;
 			}
+			OD_set_value(OD_ENTRY_H2000_digitalInputModuleKeysStates,0x01,&data,1,true);
 			OD_requestTPDO(OD_KEY_flagsPDO,1);
 		}
 

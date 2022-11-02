@@ -499,9 +499,9 @@ static CO_PROGMEM ODObjs_t ODObjs = {
     },
     .o_2005_PWM_Parametr = {
         .dataOrig0 = &OD_ROM.x2005_PWM_Parametr_sub0,
-        .dataOrig = NULL,
+        .dataOrig =  &OD_ROM.x2005_PWM_Parametr[0],
         .attribute0 = ODA_SDO_R,
-        .attribute = ODA_SDO_W | ODA_MB,
+        .attribute = ODA_SDO_RW | ODA_MB,
         .dataElementLength = 2,
         .dataElementSizeof = sizeof(uint16_t)
     },

@@ -12,7 +12,7 @@
 #include "OD.h"
 
 static uint8_t FisrtStart = 1;
-uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,100, 1, 4, 3, 200, 50};
+uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,10, 2, 4, 3, 00, 44,00,55};
 
 static uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
 static uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
@@ -48,16 +48,28 @@ void vFDInit( void )
 	   }
 		MEM_If_Read_FS(src, &SettingsREG[0],  sizeof(SettingsREG));
 		FisrtStart = 0;
-		OD_RAM.x2004_keyBoardParametr[0]= SettingsREG[KEYBOARD_PERIOD_ADRRES ];
-		OD_RAM.x2004_keyBoardParametr[1]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 1 ];
-		OD_RAM.x2004_keyBoardParametr[2]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 2 ];
-		OD_RAM.x2004_keyBoardParametr[3]= SettingsREG[KEYBOARD_PERIOD_ADRRES + 3 ];
+		OD_set_value(OD_ENTRY_H2004_keyBoardParametr,0x01,&SettingsREG[KEYBOARD_PERIOD_ADRRES ], 1, true);
+		OD_set_value(OD_ENTRY_H2004_keyBoardParametr,0x02,&SettingsREG[KEYBOARD_PERIOD_ADRRES +1 ], 1, true);
+		OD_set_value(OD_ENTRY_H2004_keyBoardParametr,0x03,&SettingsREG[KEYBOARD_PERIOD_ADRRES +2 ], 1, true);
+		OD_set_value(OD_ENTRY_H2004_keyBoardParametr,0x04,&SettingsREG[KEYBOARD_PERIOD_ADRRES +3 ], 1, true);
+		OD_set_value(OD_ENTRY_H2005_PWM_Parametr,0x01,&SettingsREG[KEYBOARD_PERIOD_ADRRES +3 ], 1, true);
+		OD_set_value(OD_ENTRY_H2005_PWM_Parametr,0x02,&SettingsREG[KEYBOARD_PERIOD_ADRRES +3 ], 1, true);
 	}
 }
-
+/*
+ *
+ */
 void vFDSetRegState(uint8_t adr, uint8_t state)
 {
 	SettingsREG[adr]= state;
+	vFDWtiteReg();
+}
+/*
+ *
+ */
+void vFDSetRegState16(uint8_t adr, uint16_t state)
+{
+	memmove(&SettingsREG[adr], &state, sizeof(state));
 	vFDWtiteReg();
 }
 

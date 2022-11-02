@@ -23,12 +23,12 @@
 #define KEYDOWN_HOLD_ADDRESS       0x0A
 #define REPEAT_TIME_ADDRESS        0x0B
 #define PWM_PERIOD_ADDRESS		   0x0C
-#define PWM_DUTY_ADDRESS			   0x0D
+#define PWM_DUTY_ADDRESS		   0x0E
 
 
-#define REG_SIZE      		PWM_DUTY_ADDRESS	+ 1
+#define REG_SIZE      		PWM_DUTY_ADDRESS	+ 2
 
-#define VALID_CODE   	0x77
+#define VALID_CODE   	0x67
 #define FLASH_SIZE  	0x08007FFFU
 #define APP_ADDRESS    	0x08008000U
 

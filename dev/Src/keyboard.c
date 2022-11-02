@@ -59,6 +59,11 @@ void vKeyboardInit(  uint32_t message )
   }
   return;
 }
+/*
+ *
+ */
+
+
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Задача обработки клавиш
@@ -72,7 +77,7 @@ void vKeyboardTask( void * argument )
   for(;;)
   {
 
-    vTaskDelay(vFDGetRegState(KEYBOARD_PERIOD_ADRRES) );
+    vTaskDelay(vFDGetRegState(KEYBOARD_PERIOD_ADRRES)*10U );
     for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Считываем текущее состояние портов клавиатуры */
     {
       TK[i]=  HAL_GPIO_ReadPin( xKeyPortMass[i].KeyPort, xKeyPortMass[i].KeyPin );

@@ -110,7 +110,9 @@ typedef struct {
         uint32_t mappedObject_4;
         uint32_t mappedObject_5;
     } x1A00_TPDOMappingParameter;
+    uint16_t x2005_PWM_Parametr[OD_CNT_ARR_2005];
     uint8_t x2005_PWM_Parametr_sub0;
+
 } OD_ROM_t;
 
 typedef struct {
