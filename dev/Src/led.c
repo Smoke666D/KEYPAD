@@ -173,14 +173,12 @@ void vLedDriverStart(void)
 	return;
 }
 /*
- * Функция включения светодиод
+ * Функция включения светодиодоы.
+ * Корректность аргументов проверятся при вызове
  */
 void vSetLedOn(uint8_t Color,uint8_t State)
 {
-	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
-	{
-		LED_ON[Color-1] = State;
-	}
+	LED_ON[Color-1] = State;
 	return;
 }
 /*
@@ -188,10 +186,7 @@ void vSetLedOn(uint8_t Color,uint8_t State)
  */
 void vSetLedBlink(uint8_t Color, uint8_t State)
 {
-	if ((Color >=RED_COLOR) && (Color <=BLUE_COLOR))
-	{
-		LED_BLINK[Color-1] = State;
-	}
+	LED_BLINK[Color-1] = State;
 	return;
 }
 
