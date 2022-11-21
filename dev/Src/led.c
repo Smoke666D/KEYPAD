@@ -12,13 +12,14 @@ static uint8_t LED_BLINK[SPI_PACKET_SIZE]    	=         { 0x00 , 0x00 , 0x00 };
 
 static uint16_t backligch_brigth		 = 0x1F;
 static uint16_t led_brigth 				 = 0x3F;
-static SPI_HandleTypeDef* LEDSpi         = NULL;
+//static SPI_HandleTypeDef* LEDSpi         = NULL;
 static uint8_t color_div 				 = 1U;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static uint8_t brigth_color[SPI_PACKET_SIZE];
 static uint16_t led_brigth_counter 		= 0;
 static uint16_t led_blink_counter 		= 0;
 static uint8_t BlinkON					= 1;
+static uint8_t ucSPI_Busy 				= 0;
 /*
  * Защелка данных в SPI буферах
  * Поскольку длителность импульса мала, не целесобразно делать задержку через что-то, кроме пустого цикла
@@ -33,80 +34,46 @@ static void vLatch( void )
 /*
  *
  */
-
-uint8_t ucSPI_Busy = 0;
-
-void HAL_SPI_Transmit1(SPI_HandleTypeDef *hspi, uint8_t *pData)
+static void vSPI_Transmit( uint8_t *pData)
 {
-
   uint32_t tickstart = HAL_GetTick();
-
-  if (ucSPI_Busy == 0)
+  if ( ! ucSPI_Busy )
   {
 	  ucSPI_Busy = 1;
-
-	  /* Check if the SPI is already enabled */
-	  if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE)
+	  if (! LL_SPI_IsEnabled(SPI2) )
 	  {
-		  /* Enable SPI peripheral */
-		  __HAL_SPI_ENABLE(hspi);
+		  LL_SPI_Enable(SPI2);
 	  }
-
 	  for (uint8_t i = 0; i< SPI_PACKET_SIZE; i++)
 	  {
-    	while (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE) == 0)
+    	while (! LL_SPI_IsActiveFlag_TXE(SPI2) )
     	{
-    		if ((HAL_GetTick() - tickstart) >=  SPI_TIMEOUT)
+    		if ( (HAL_GetTick() - tickstart) >=  SPI_TIMEOUT)
     		{
-    			ucSPI_Busy = 0;
-    		    return;
+    			goto error;
     		}
     	}
-    	*((__IO uint8_t *)&hspi->Instance->DR) = pData[i];
-
+    	LL_SPI_TransmitData8(SPI2,pData[i]);
 	  }
-	  __IO uint32_t count;
-
-	   /* Adjust Timeout value  in case of end of transfer */
-	   uint32_t tmp_timeout   = SPI_TIMEOUT - (HAL_GetTick() - tickstart);
-	   uint32_t tmp_tickstart = HAL_GetTick();
-
-	   /* Calculate Timeout based on a software loop to avoid blocking issue if Systick is disabled */
-	   count = tmp_timeout * ((SystemCoreClock * 32U) >> 20U);
-
-	   while ((__HAL_SPI_GET_FLAG(hspi,  SPI_FLAG_BSY) ? SET : RESET) != RESET)
+	   while ( LL_SPI_IsActiveFlag_BSY(SPI2) )
 	   {
-	       if (((HAL_GetTick() - tmp_tickstart) >= tmp_timeout) || (tmp_timeout == 0U))
-	       {
+			if ( (HAL_GetTick() - tickstart) >=  SPI_TIMEOUT)
+	        {
 	         /* Disable TXE, RXNE and ERR interrupts for the interrupt process */
-	         __HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_RXNE | SPI_IT_ERR));
-	         /* Process Unlocked */
-
+	    	   LL_SPI_DisableIT_RXNE(SPI2);
+	    	   LL_SPI_DisableIT_ERR(SPI2);
+	    	   LL_SPI_DisableIT_TXE(SPI2);
+	    	   goto error;
 	       }
-	       /* If Systick is disabled or not incremented, deactivate timeout to go in disable loop procedure */
-	       if(count == 0U)
-	       {
-	         tmp_timeout = 0U;
-	       }
-	       count--;
 	   }
-	   __HAL_SPI_CLEAR_OVRFLAG(hspi);
+	   LL_SPI_ClearFlag_OVR(SPI2);
   }
-
+  vLatch();
+ error:
   ucSPI_Busy = 0;
   return;
 }
 
-
-
-
-
-static void vDrvLedSetState(uint8_t * state)
-{
-	HAL_SPI_Transmit1(LEDSpi,&state[0U] );
-	vLatch();
-	return;
-}
 /*
  *
  */
@@ -210,10 +177,10 @@ static void vSTPNormalMode()
 /*
  *
  */
-void vLedInit(TIM_HandleTypeDef * htim,  SPI_HandleTypeDef* spi )
+void vLedInit(TIM_HandleTypeDef * htim)
 {
 	pwmtim = htim;
-	LEDSpi = spi;
+	//LEDSpi = spi;
 	vSetBackLigthColor(vFDGetRegState(DEF_BL_COLOR_ADR));
 	vSetLedBrigth(vFDGetRegState(DEF_LED_BRIGTH_ADR));
 	vSetBackLigth(vFDGetRegState(DEF_BL_BRIGTH_ADR));
@@ -348,7 +315,6 @@ void vSetBrigth(uint8_t brigth)
 		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_3);
 		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_3);
 	}
-
 }
 /*
  *
@@ -404,8 +370,7 @@ void vLedProcess( void )
 	 	data[0]|=LED_ON[2];
 
 	 }
-     vDrvLedSetState(&data[0]);
+	vSPI_Transmit(&data[0]);
      return;
 }
-
 

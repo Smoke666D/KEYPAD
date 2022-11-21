@@ -63,7 +63,7 @@ void vSetLedBrigth(uint8_t brigth);
 void vSetLedOn(uint8_t Color,uint8_t State);
 void vSetLedBlink(uint8_t Color,uint8_t State);
 void vSetBrigth(uint8_t brigth);
-void vLedInit(TIM_HandleTypeDef * htim, SPI_HandleTypeDef* spi );
+void vLedInit(TIM_HandleTypeDef * htim);
 void vSetBackLigth(uint8_t brigth);
 void vLedDriverStart(void);
 void vLedProcess( void );
