@@ -520,43 +520,96 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
 /*
  *
  */
-static void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
-    static CAN_RxHeaderTypeDef rx;
+
+HAL_StatusTypeDef CAN_GetRxMessage(CAN_HandleTypeDef *hcan, uint32_t RxFifo,  CO_CANrxMsg_t * pCANData)
+{
+  HAL_CAN_StateTypeDef state = hcan->State;
+
+  if ((state == HAL_CAN_STATE_READY) ||
+      (state == HAL_CAN_STATE_LISTENING))
+  {
+    /* Check the Rx FIFO */
+    if (RxFifo == CAN_RX_FIFO0) /* Rx element is assigned to Rx FIFO 0 */
+    {
+      /* Check that the Rx FIFO 0 is not empty */
+      if ((hcan->Instance->RF0R & CAN_RF0R_FMP0) == 0U)
+      {
+        /* Update error code */
+        hcan->ErrorCode |= HAL_CAN_ERROR_PARAM;
+
+        return HAL_ERROR;
+      }
+    }
+    else /* Rx element is assigned to Rx FIFO 1 */
+    {
+      /* Check that the Rx FIFO 1 is not empty */
+      if ((hcan->Instance->RF1R & CAN_RF1R_FMP1) == 0U)
+      {
+        /* Update error code */
+        hcan->ErrorCode |= HAL_CAN_ERROR_PARAM;
+
+        return HAL_ERROR;
+      }
+    }
+
+    if ( ( CAN_RI0R_IDE & hcan->Instance->sFIFOMailBox[RxFifo].RIR ) == CAN_ID_STD)
+    {
+
+    	pCANData->ident = (CAN_RI0R_STID & hcan->Instance->sFIFOMailBox[RxFifo].RIR) >> CAN_TI0R_STID_Pos |
+    		((CAN_RI0R_RTR & hcan->Instance->sFIFOMailBox[RxFifo].RIR) == CAN_RTR_REMOTE ? FLAG_RTR : 0x00);
+    	pCANData->dlc = (CAN_RDT0R_DLC & hcan->Instance->sFIFOMailBox[RxFifo].RDTR) >> CAN_RDT0R_DLC_Pos;
+    	pCANData->data[0] = (uint8_t)((CAN_RDL0R_DATA0 & hcan->Instance->sFIFOMailBox[RxFifo].RDLR) >> CAN_RDL0R_DATA0_Pos);
+    	pCANData->data[1] = (uint8_t)((CAN_RDL0R_DATA1 & hcan->Instance->sFIFOMailBox[RxFifo].RDLR) >> CAN_RDL0R_DATA1_Pos);
+    	pCANData->data[2] = (uint8_t)((CAN_RDL0R_DATA2 & hcan->Instance->sFIFOMailBox[RxFifo].RDLR) >> CAN_RDL0R_DATA2_Pos);
+    	pCANData->data[3] = (uint8_t)((CAN_RDL0R_DATA3 & hcan->Instance->sFIFOMailBox[RxFifo].RDLR) >> CAN_RDL0R_DATA3_Pos);
+    	pCANData->data[4] = (uint8_t)((CAN_RDH0R_DATA4 & hcan->Instance->sFIFOMailBox[RxFifo].RDHR) >> CAN_RDH0R_DATA4_Pos);
+    	pCANData->data[5] = (uint8_t)((CAN_RDH0R_DATA5 & hcan->Instance->sFIFOMailBox[RxFifo].RDHR) >> CAN_RDH0R_DATA5_Pos);
+    	pCANData->data[6] = (uint8_t)((CAN_RDH0R_DATA6 & hcan->Instance->sFIFOMailBox[RxFifo].RDHR) >> CAN_RDH0R_DATA6_Pos);
+    	pCANData->data[7] = (uint8_t)((CAN_RDH0R_DATA7 & hcan->Instance->sFIFOMailBox[RxFifo].RDHR) >> CAN_RDH0R_DATA7_Pos);
+    }
+    /* Release the FIFO */
+    if (RxFifo == CAN_RX_FIFO0) /* Rx element is assigned to Rx FIFO 0 */
+    {
+      /* Release RX FIFO 0 */
+      SET_BIT(hcan->Instance->RF0R, CAN_RF0R_RFOM0);
+    }
+    else /* Rx element is assigned to Rx FIFO 1 */
+    {
+      /* Release RX FIFO 1 */
+      SET_BIT(hcan->Instance->RF1R, CAN_RF1R_RFOM1);
+    }
+
+    /* Return function status */
+    return HAL_OK;
+  }
+  else
+  {
+    /* Update error code */
+    hcan->ErrorCode |= HAL_CAN_ERROR_NOT_INITIALIZED;
+
+    return HAL_ERROR;
+  }
+}
+
+
+
+ void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo) {
+
     static CO_CANrxMsg_t rcvMsg;
-    CO_CANrx_t *buffer = NULL;              /* receive message buffer from CO_CANmodule_t object. */
-    uint16_t index;                         /* index of received message */
-    uint32_t rcvMsgIdent;                   /* identifier of the received message */
-    uint8_t messageFound = 0;
-
-    /* Read received message from FIFO */
-    rx.ExtId = 0;
-    rx.StdId = 0;
-    if (HAL_CAN_GetRxMessage(can, fifo, &rx, rcvMsg.data) != HAL_OK)
+    if (CAN_GetRxMessage(can, fifo,  &rcvMsg) == HAL_OK)
     {
-        return;
-    }
-    if (rx.ExtId != 0)
-    {
-    	return;
-    }
-    /* Setup identifier (with RTR) and length */
-    rcvMsg.ident = rx.StdId  | (rx.RTR == CAN_RTR_REMOTE ? FLAG_RTR : 0x00);
-    rcvMsg.dlc	 = rx.DLC;
-    rcvMsgIdent  = rcvMsg.ident;
-
-    buffer = CANModule_local->rxArray;
-    for (index = CANModule_local->rxSize; index > 0U; --index, ++buffer)
-    {
-         if (((rcvMsgIdent ^ buffer->ident) & buffer->mask) == 0U)
-         {
-              messageFound = 1;
-              break;
-          }
-    }
-    /* Call specific function, which will process the message */
-    if (messageFound && buffer != NULL && buffer->CANrx_callback != NULL)
-    {
-        buffer->CANrx_callback(buffer->object, (void*) &rcvMsg);
+    	CO_CANrx_t * buffer = CANModule_local->rxArray;
+    	    for (uint8_t index = CANModule_local->rxSize; index > 0U; --index, ++buffer)
+    	    {
+    	         if (((rcvMsg.ident ^ buffer->ident) & buffer->mask) == 0U)
+    	         {
+    	              if (buffer != NULL && buffer->CANrx_callback != NULL)
+    	              {
+    	                  buffer->CANrx_callback(buffer->object, (void*) &rcvMsg);
+    	              }
+    	              break;
+    	          }
+    	    }
     }
     return;
 }

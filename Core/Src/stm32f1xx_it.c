@@ -170,8 +170,52 @@ void USB_HP_CAN1_TX_IRQHandler(void)
 {
   /* USER CODE BEGIN USB_HP_CAN1_TX_IRQn 0 */
 
+   uint32_t tsrflags = READ_REG(hcan.Instance->TSR);
+
+   if ((READ_REG(hcan.Instance->IER) & CAN_IT_TX_MAILBOX_EMPTY) != 0U)
+   {
+     if ((tsrflags & CAN_TSR_RQCP0) != 0U)
+     {
+       /* Clear the Transmission Complete flag (and TXOK0,ALST0,TERR0 bits) */
+       __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP0);
+       if ((tsrflags & CAN_TSR_TXOK0) != 0U)
+       {
+         hcan.TxMailbox0CompleteCallback(&hcan);
+
+       }
+     }
+     if ((tsrflags & CAN_TSR_RQCP1) != 0U)
+     {
+
+       __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP1);
+
+       if ((tsrflags & CAN_TSR_TXOK1) != 0U)
+       {
+         hcan.TxMailbox1CompleteCallback(&hcan);
+       }
+
+     }
+
+     /* Transmit Mailbox 2 management *****************************************/
+     if ((tsrflags & CAN_TSR_RQCP2) != 0U)
+     {
+       /* Clear the Transmission Complete flag (and TXOK2,ALST2,TERR2 bits) */
+       __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP2);
+
+       if ((tsrflags & CAN_TSR_TXOK2) != 0U)
+       {
+
+         hcan.TxMailbox2CompleteCallback(&hcan);
+
+         }
+      }
+   }
+
+
+
   /* USER CODE END USB_HP_CAN1_TX_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
+
+  //HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN USB_HP_CAN1_TX_IRQn 1 */
 
   /* USER CODE END USB_HP_CAN1_TX_IRQn 1 */
@@ -183,9 +227,17 @@ void USB_HP_CAN1_TX_IRQHandler(void)
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
+	 if ((READ_REG(hcan.Instance->IER) & CAN_IT_RX_FIFO0_MSG_PENDING) != 0U)
+	  {
 
+	    if ((hcan.Instance->RF0R & CAN_RF0R_FMP0) != 0U)
+	    {
+	      prv_read_can_received_msg(&hcan, CAN_RX_FIFO0);
+
+	    }
+	  }
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
+  //HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
 
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
@@ -198,26 +250,20 @@ void CAN1_RX1_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN1_RX1_IRQn 0 */
 
+  if ((READ_REG(hcan.Instance->IER) & CAN_IT_RX_FIFO1_MSG_PENDING) != 0U)
+  {
+    if ((hcan.Instance->RF1R & CAN_RF1R_FMP1) != 0U)
+    {
+      prv_read_can_received_msg(&hcan, CAN_RX_FIFO1);
+    }
+  }
   /* USER CODE END CAN1_RX1_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
+//  HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN CAN1_RX1_IRQn 1 */
 
   /* USER CODE END CAN1_RX1_IRQn 1 */
 }
 
-/**
-  * @brief This function handles CAN SCE interrupt.
-  */
-void CAN1_SCE_IRQHandler(void)
-{
-  /* USER CODE BEGIN CAN1_SCE_IRQn 0 */
-
-  /* USER CODE END CAN1_SCE_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
-  /* USER CODE BEGIN CAN1_SCE_IRQn 1 */
-
-  /* USER CODE END CAN1_SCE_IRQn 1 */
-}
 
 /**
   * @brief This function handles TIM1 update interrupt.

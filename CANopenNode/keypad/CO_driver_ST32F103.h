@@ -35,6 +35,7 @@ uint8_t  co_drv_create_os_objects(void);
 uint8_t co_drv_mutex_lock(void);
 uint8_t co_drv_mutex_unlock(void);
 void CO_CANsetConfigurationMode(void *CANptr);
+void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo);
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan);
