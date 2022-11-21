@@ -12,7 +12,6 @@ static uint8_t LED_BLINK[SPI_PACKET_SIZE]    	=         { 0x00 , 0x00 , 0x00 };
 
 static uint16_t backligch_brigth		 = 0x1F;
 static uint16_t led_brigth 				 = 0x3F;
-//static SPI_HandleTypeDef* LEDSpi         = NULL;
 static uint8_t color_div 				 = 1U;
 static TIM_HandleTypeDef * pwmtim		 = NULL;
 static uint8_t brigth_color[SPI_PACKET_SIZE];
