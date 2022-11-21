@@ -179,12 +179,19 @@ static void vSTPNormalMode()
 void vLedInit(TIM_HandleTypeDef * htim)
 {
 	pwmtim = htim;
-	//LEDSpi = spi;
 	vSetBackLigthColor(vFDGetRegState(DEF_BL_COLOR_ADR));
 	vSetLedBrigth(vFDGetRegState(DEF_LED_BRIGTH_ADR));
 	vSetBackLigth(vFDGetRegState(DEF_BL_BRIGTH_ADR));
     vSetBrigth(MAX_BRIGTH);
+
     return;
+}
+
+void vStartLed()
+{
+   LL_TIM_EnableIT_UPDATE(TIM4);
+   LL_TIM_EnableCounter(TIM4);
+   return;
 }
 /*
  *
@@ -316,10 +323,13 @@ void vSetBrigth(uint8_t brigth)
 	}
 }
 /*
- *
+ *  Функция вывода данных в SPI, вызывается по прерыванию таймра №4
  */
 void vLedProcess( void )
 {
+	/*Cбравысваем флаг тамера 4*/
+	LL_TIM_ClearFlag_UPDATE(TIM4);
+
 	uint8_t data[SPI_PACKET_SIZE];
 	uint8_t temp_led;
 	led_brigth_counter++;
@@ -367,9 +377,8 @@ void vLedProcess( void )
 		data[2]|=LED_ON[0];
 	 	data[1]|=LED_ON[1];
 	 	data[0]|=LED_ON[2];
-
 	 }
-	vSPI_Transmit(&data[0]);
+	 vSPI_Transmit(&data[0]);
      return;
 }
 
