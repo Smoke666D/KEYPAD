@@ -36,10 +36,6 @@ uint8_t co_drv_mutex_lock(void);
 uint8_t co_drv_mutex_unlock(void);
 void CO_CANsetConfigurationMode(void *CANptr);
 void  prv_read_can_received_msg(CAN_HandleTypeDef* can, uint32_t fifo);
-void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan);
-void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan);
-void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan);
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
+void CAN_SendMessage();
 
 #endif /* KEYPAD_CO_DRIVER_ST32F103_H_ */

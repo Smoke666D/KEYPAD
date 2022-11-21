@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "led.h"
+#include "CO_driver_ST32F103.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -169,50 +170,37 @@ void DebugMon_Handler(void)
 void USB_HP_CAN1_TX_IRQHandler(void)
 {
   /* USER CODE BEGIN USB_HP_CAN1_TX_IRQn 0 */
-
    uint32_t tsrflags = READ_REG(hcan.Instance->TSR);
-
    if ((READ_REG(hcan.Instance->IER) & CAN_IT_TX_MAILBOX_EMPTY) != 0U)
    {
      if ((tsrflags & CAN_TSR_RQCP0) != 0U)
      {
-       /* Clear the Transmission Complete flag (and TXOK0,ALST0,TERR0 bits) */
        __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP0);
        if ((tsrflags & CAN_TSR_TXOK0) != 0U)
        {
-         hcan.TxMailbox0CompleteCallback(&hcan);
-
+    	   CAN_SendMessage();
        }
      }
      if ((tsrflags & CAN_TSR_RQCP1) != 0U)
      {
 
        __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP1);
-
        if ((tsrflags & CAN_TSR_TXOK1) != 0U)
        {
-         hcan.TxMailbox1CompleteCallback(&hcan);
+    	   CAN_SendMessage();
        }
-
      }
-
      /* Transmit Mailbox 2 management *****************************************/
      if ((tsrflags & CAN_TSR_RQCP2) != 0U)
      {
        /* Clear the Transmission Complete flag (and TXOK2,ALST2,TERR2 bits) */
        __HAL_CAN_CLEAR_FLAG(&hcan, CAN_FLAG_RQCP2);
-
        if ((tsrflags & CAN_TSR_TXOK2) != 0U)
        {
-
-         hcan.TxMailbox2CompleteCallback(&hcan);
-
+    	   CAN_SendMessage();
          }
       }
    }
-
-
-
   /* USER CODE END USB_HP_CAN1_TX_IRQn 0 */
 
   //HAL_CAN_IRQHandler(&hcan);

@@ -322,6 +322,72 @@ CO_CANtx_t *CO_CANtxBufferInit(
 
 
 
+HAL_StatusTypeDef CAN_AddTxMessage(CAN_HandleTypeDef *hcan, CAN_TxHeaderTypeDef *pHeader, uint8_t aData[])
+{
+  HAL_CAN_StateTypeDef state = hcan->State;
+  uint32_t tsr = READ_REG(hcan->Instance->TSR);
+
+  if ((state == HAL_CAN_STATE_READY) || (state == HAL_CAN_STATE_LISTENING))
+  {
+    /* Check that all the Tx mailboxes are not full */
+    if (((tsr & CAN_TSR_TME0) != 0U) ||  ((tsr & CAN_TSR_TME1) != 0U) || ((tsr & CAN_TSR_TME2) != 0U))
+    {
+      uint32_t transmitmailbox = (tsr & CAN_TSR_CODE) >> CAN_TSR_CODE_Pos;
+      if (transmitmailbox <= 2U)
+      {
+          	  hcan->Instance->sTxMailBox[transmitmailbox].TIR = ((pHeader->StdId << CAN_TI0R_STID_Pos) | pHeader->RTR);
+      	  hcan->Instance->sTxMailBox[transmitmailbox].TDTR = (pHeader->DLC);
+      	  if (pHeader->TransmitGlobalTime == ENABLE)
+      	  {
+    	  SET_BIT(hcan->Instance->sTxMailBox[transmitmailbox].TDTR, CAN_TDT0R_TGT);
+      	  }
+      	  /* Set up the data field */
+      	  WRITE_REG(hcan->Instance->sTxMailBox[transmitmailbox].TDHR,
+                ((uint32_t)aData[7] << CAN_TDH0R_DATA7_Pos) |
+                ((uint32_t)aData[6] << CAN_TDH0R_DATA6_Pos) |
+                ((uint32_t)aData[5] << CAN_TDH0R_DATA5_Pos) |
+                ((uint32_t)aData[4] << CAN_TDH0R_DATA4_Pos));
+      	  WRITE_REG(hcan->Instance->sTxMailBox[transmitmailbox].TDLR,
+                ((uint32_t)aData[3] << CAN_TDL0R_DATA3_Pos) |
+                ((uint32_t)aData[2] << CAN_TDL0R_DATA2_Pos) |
+                ((uint32_t)aData[1] << CAN_TDL0R_DATA1_Pos) |
+                ((uint32_t)aData[0] << CAN_TDL0R_DATA0_Pos));
+
+      	  SET_BIT(hcan->Instance->sTxMailBox[transmitmailbox].TIR, CAN_TI0R_TXRQ);
+      	  return HAL_OK;
+    	}
+    }
+  }
+  return HAL_ERROR;
+}
+
+
+uint16_t CAN_GetTxMailboxesFreeLevel(CAN_HandleTypeDef *hcan)
+{
+  uint16_t freelevel = 0U;
+
+  if ((hcan->State == HAL_CAN_STATE_READY) || (hcan->State == HAL_CAN_STATE_LISTENING))
+  {
+    /* Check Tx Mailbox 0 status */
+    if ((hcan->Instance->TSR & CAN_TSR_TME0) != 0U)
+    {
+      freelevel++;
+    }
+    /* Check Tx Mailbox 1 status */
+    if ((hcan->Instance->TSR & CAN_TSR_TME1) != 0U)
+    {
+      freelevel++;
+    }
+    /* Check Tx Mailbox 2 status */
+    if ((hcan->Instance->TSR & CAN_TSR_TME2) != 0U)
+    {
+      freelevel++;
+    }
+  }
+  return ( freelevel );
+}
+
+
 /**
  * \brief           Send CAN message to network
  * This function must be called with atomic access.
@@ -329,20 +395,20 @@ CO_CANtx_t *CO_CANtxBufferInit(
  * \param[in]       CANmodule: CAN module instance
  * \param[in]       buffer: Pointer to buffer to transmit
  */
-static uint32_t TxMailbox;
+
 static  CAN_TxHeaderTypeDef pTXHeader ={0,0,CAN_ID_STD,0,0,DISABLE};
 
-static uint8_t prv_send_can_message(CO_CANmodule_t* CANmodule, CO_CANtx_t *buffer) {
+static uint32_t prv_send_can_message(CO_CANmodule_t* CANmodule, CO_CANtx_t *buffer) {
 
     /* Check if TX FIFO is ready to accept more messages */
-    if (HAL_CAN_GetTxMailboxesFreeLevel(CANmodule->CANptr) > 0)
+    if (CAN_GetTxMailboxesFreeLevel(CANmodule->CANptr) > 0)
     {
         pTXHeader.DLC                = (uint32_t)buffer->DLC;
         pTXHeader.RTR                = (buffer->ident & FLAG_RTR) ? CAN_RTR_REMOTE : CAN_RTR_DATA;
         pTXHeader.StdId              = buffer->ident & CANID_MASK;
 
         /* Now add message to FIFO. Should not fail */
-        if (HAL_CAN_AddTxMessage(CANmodule->CANptr,  &pTXHeader, buffer->data, &TxMailbox) == HAL_OK)
+        if (CAN_AddTxMessage(CANmodule->CANptr,  &pTXHeader, buffer->data) == HAL_OK)
         {
         	return 1U;
         }
@@ -374,7 +440,6 @@ CO_ReturnError_t CO_CANsend(CO_CANmodule_t *CANmodule, CO_CANtx_t *buffer){
           CANmodule->CANtxCount++;
       }
     CO_UNLOCK_CAN_SEND(CANmodule);
-
     return err;
 }
 
@@ -475,7 +540,7 @@ void CO_CANmodule_process(CO_CANmodule_t *CANmodule) {
 
 
 
-static void CAN_SendMessage()
+ void CAN_SendMessage()
 {
 	CANModule_local->firstCANtxMessage = false;
 	CANModule_local->bufferInhibitFlag = false;
@@ -502,21 +567,7 @@ static void CAN_SendMessage()
         CO_UNLOCK_CAN_SEND(CANModule_local);
     }
 }
-/*
- *
- */
-void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
-{
-	CAN_SendMessage();
-}
-void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
-{
-	CAN_SendMessage();
-}
-void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
-{
-	CAN_SendMessage();
-}
+
 /*
  *
  */
