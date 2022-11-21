@@ -1,16 +1,16 @@
 #MicroXplorer Configuration settings - do not modify
+CAN.ABOM=ENABLE
 CAN.BS1=CAN_BS1_12TQ
 CAN.BS2=CAN_BS2_5TQ
 CAN.CalculateBaudRate=125000
 CAN.CalculateTimeBit=8000
 CAN.CalculateTimeQuantum=444.44444444444446
-CAN.IPParameters=CalculateTimeQuantum,CalculateTimeBit,CalculateBaudRate,Mode,Prescaler,SJW,BS1,BS2
+CAN.IPParameters=CalculateTimeQuantum,CalculateTimeBit,CalculateBaudRate,Mode,Prescaler,SJW,BS1,BS2,ABOM
 CAN.Mode=CAN_MODE_NORMAL
 CAN.Prescaler=16
 CAN.SJW=CAN_SJW_4TQ
-FREERTOS.Events01=
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,FootprintOK,configTOTAL_HEAP_SIZE,configUSE_NEWLIB_REENTRANT,Events01
+FREERTOS.IPParameters=Tasks01,FootprintOK,configTOTAL_HEAP_SIZE,configUSE_NEWLIB_REENTRANT
 FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Static,defaultTaskBuffer,defaultTaskControlBlock;KeyboardTask,24,128,vKeyboardTask,As external,NULL,Static,KeyboardTaskBuffer,KeyboardTaskControlBlock;ProcessTask,40,128,vProcessTask,As external,NULL,Static,ProcessTaskBuffer,ProcessTaskControlBlock;CanOpenPeriodic,24,256,vCanOpenPeriodicProcess,As external,NULL,Static,CanOpenPeriodicBuffer,CanOpenPeriodicControlBlock;CanOpenProcess,25,700,vCanOpenProcess,As external,NULL,Static,CanOpenProcessBuffer,CanOpenProcessControlBlock
 FREERTOS.configTOTAL_HEAP_SIZE=1000
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
