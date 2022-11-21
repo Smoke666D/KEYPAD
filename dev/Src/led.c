@@ -33,9 +33,77 @@ static void vLatch( void )
 /*
  *
  */
+
+uint8_t ucSPI_Busy = 0;
+
+void HAL_SPI_Transmit1(SPI_HandleTypeDef *hspi, uint8_t *pData)
+{
+
+  uint32_t tickstart = HAL_GetTick();
+
+  if (ucSPI_Busy == 0)
+  {
+	  ucSPI_Busy = 1;
+
+	  /* Check if the SPI is already enabled */
+	  if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE)
+	  {
+		  /* Enable SPI peripheral */
+		  __HAL_SPI_ENABLE(hspi);
+	  }
+
+	  for (uint8_t i = 0; i< SPI_PACKET_SIZE; i++)
+	  {
+    	while (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE) == 0)
+    	{
+    		if ((HAL_GetTick() - tickstart) >=  SPI_TIMEOUT)
+    		{
+    			ucSPI_Busy = 0;
+    		    return;
+    		}
+    	}
+    	*((__IO uint8_t *)&hspi->Instance->DR) = pData[i];
+
+	  }
+	  __IO uint32_t count;
+
+	   /* Adjust Timeout value  in case of end of transfer */
+	   uint32_t tmp_timeout   = SPI_TIMEOUT - (HAL_GetTick() - tickstart);
+	   uint32_t tmp_tickstart = HAL_GetTick();
+
+	   /* Calculate Timeout based on a software loop to avoid blocking issue if Systick is disabled */
+	   count = tmp_timeout * ((SystemCoreClock * 32U) >> 20U);
+
+	   while ((__HAL_SPI_GET_FLAG(hspi,  SPI_FLAG_BSY) ? SET : RESET) != RESET)
+	   {
+	       if (((HAL_GetTick() - tmp_tickstart) >= tmp_timeout) || (tmp_timeout == 0U))
+	       {
+	         /* Disable TXE, RXNE and ERR interrupts for the interrupt process */
+	         __HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_RXNE | SPI_IT_ERR));
+	         /* Process Unlocked */
+
+	       }
+	       /* If Systick is disabled or not incremented, deactivate timeout to go in disable loop procedure */
+	       if(count == 0U)
+	       {
+	         tmp_timeout = 0U;
+	       }
+	       count--;
+	   }
+	   __HAL_SPI_CLEAR_OVRFLAG(hspi);
+  }
+
+  ucSPI_Busy = 0;
+  return;
+}
+
+
+
+
+
 static void vDrvLedSetState(uint8_t * state)
 {
-	HAL_SPI_Transmit(LEDSpi,&state[0U], SPI_PACKET_SIZE, SPI_TIMEOUT );
+	HAL_SPI_Transmit1(LEDSpi,&state[0U] );
 	vLatch();
 	return;
 }
