@@ -65,7 +65,7 @@ void vKeyboardTask( void * argument )
         COUNTERS[i]    = 0U;      /*Сбрасываем счетчик*/
 
         TEvent.Status  = BRAKECODE;
-        xQueueReset( pKeyboardQueue );
+        //xQueueReset( pKeyboardQueue );
         xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
 
       }
