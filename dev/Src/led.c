@@ -309,7 +309,7 @@ void vSetBrigth(uint8_t brigth)
 		 * дополнительных переходных цветов, например  AMBER и YELLOW_GREEN
 		 */
 		HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_1);
-		sConfigOC.Pulse = (uint32_t)( ( (float)(brigth)/MAX_BRIGTH )*(pwmtim->Init.Period- 49U)) +1;
+		sConfigOC.Pulse = (uint32_t)( ( (float)(brigth)/MAX_BRIGTH )*(pwmtim->Init.Period)) +1;
 		HAL_TIM_PWM_ConfigChannel(pwmtim, &sConfigOC, TIM_CHANNEL_1);
 		HAL_TIM_PWM_Start(pwmtim,TIM_CHANNEL_1);
 		HAL_TIM_PWM_Stop(pwmtim,TIM_CHANNEL_2);
