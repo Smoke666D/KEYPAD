@@ -50,7 +50,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+#define RESTART_DISABLE  0x0001
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -91,6 +91,7 @@ void Error_Handler(void);
 #define KL7_GPIO_Port GPIOB
 #define KL8_Pin GPIO_PIN_7
 #define KL8_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

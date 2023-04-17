@@ -32,6 +32,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -110,6 +111,14 @@ const osThreadAttr_t CanOpenProcess_attributes = {
   .stack_mem = &CanOpenProcessBuffer[0],
   .stack_size = sizeof(CanOpenProcessBuffer),
   .priority = (osPriority_t) osPriorityNormal1,
+};
+/* Definitions for xResetEvent */
+osEventFlagsId_t xResetEventHandle;
+osStaticEventGroupDef_t cResetEventControlBlock;
+const osEventFlagsAttr_t xResetEvent_attributes = {
+  .name = "xResetEvent",
+  .cb_mem = &cResetEventControlBlock,
+  .cb_size = sizeof(cResetEventControlBlock),
 };
 /* USER CODE BEGIN PV */
 
@@ -223,13 +232,16 @@ int main(void)
 
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
+  /* creation of xResetEvent */
+  xResetEventHandle = osEventFlagsNew(&xResetEvent_attributes);
+
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
-
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -577,6 +589,8 @@ static void MX_TIM4_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -637,10 +651,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-
+void vRestartNode()
+{
+	xEventGroupClearBitsFromISR(xResetEventHandle,RESTART_DISABLE);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -655,8 +674,10 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
   vLedDriverStart();
+  xEventGroupSetBits( xResetEventHandle, RESTART_DISABLE);
   for(;;)
   {
+	xEventGroupWaitBits(xResetEventHandle,RESTART_DISABLE,pdFALSE,pdFALSE,portMAX_DELAY );
     osDelay(500);
     LL_IWDG_ReloadCounter(IWDG);
   }

@@ -225,6 +225,7 @@ CO_ReturnError_t CO_CANmodule_init(
                   | CAN_IT_TX_MAILBOX_EMPTY
 				  | CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO0_FULL | CAN_IT_RX_FIFO0_OVERRUN
 				  | CAN_IT_RX_FIFO1_MSG_PENDING | CAN_IT_RX_FIFO1_FULL | CAN_IT_RX_FIFO1_OVERRUN
+				  | CAN_IT_BUSOFF
 				  ) != HAL_OK) {
               return CO_ERROR_ILLEGAL_ARGUMENT;
       }
@@ -677,5 +678,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	prv_read_can_received_msg(hcan, CAN_RX_FIFO1);
+}
+
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+	if __HAL_CAN_GET_FLAG(hcan,CAN_FLAG_BOF )
+	{
+		vRestartNode();
+	}
 }
 
