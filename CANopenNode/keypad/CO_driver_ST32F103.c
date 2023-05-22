@@ -157,9 +157,9 @@ CO_ReturnError_t CO_CANmodule_init(
     /* Configure CAN module registers */
     hcan->Init.Mode = CAN_MODE_NORMAL;
     hcan->Init.TimeTriggeredMode = DISABLE;
-    hcan->Init.AutoBusOff = DISABLE;
+    hcan->Init.AutoBusOff = ENABLE;
     hcan->Init.AutoWakeUp = DISABLE;
-    hcan->Init.AutoRetransmission = ENABLE;
+    hcan->Init.AutoRetransmission = DISABLE;
     hcan->Init.ReceiveFifoLocked = DISABLE;
     hcan->Init.TransmitFifoPriority = DISABLE;
 
