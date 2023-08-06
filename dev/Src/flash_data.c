@@ -11,8 +11,8 @@
 #include "led.h"
 #include "OD.h"
 
-static uint8_t FisrtStart = 1;
-uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,4, 2, 4, 3, 00, 44,00,55};
+static uint8_t FisrtStart = 1; // 0         1    2     3     4     5      6     7  8  9  10
+uint8_t SettingsREG[REG_SIZE]={VALID_CODE, 0x00, 0x15, 0x01, 0x3F, 0x00, WHITE, 1 ,2, 2, 4, 3, 00, 44,00,55};
 
 static uint8_t *MEM_If_Read_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
 static uint16_t MEM_If_Write_FS(uint8_t *src, uint8_t *dest, uint32_t Len);
