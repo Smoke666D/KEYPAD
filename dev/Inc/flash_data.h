@@ -28,7 +28,7 @@
 
 #define REG_SIZE      		PWM_DUTY_ADDRESS	+ 2
 
-#define VALID_CODE   	0x25
+#define VALID_CODE   	0x65
 #define FLASH_SIZE  	0x08007FFFU
 #define APP_ADDRESS    	0x08008000U
 
